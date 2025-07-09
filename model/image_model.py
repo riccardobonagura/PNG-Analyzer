@@ -1,6 +1,15 @@
 import cv2
 import numpy as np
-from model.color_tools import convert_rgb_to_ycbcr
+from matplotlib.figure import Figure
+from model.color_tools import create_rgb_figure
+
+from model.color_tools import (
+    convert_rgb_to_ycbcr,
+    create_ycbcr_figure,
+    convert_rgb_to_hsv_manual,
+    create_hsv_figure,
+)
+
 
 class ImageModel:
     """
@@ -94,9 +103,6 @@ class ImageModel:
         """
         return self._filepath
 
-
-# All’interno della classe ImageModel:
-
     def convert_to_ycbcr(self):
         """
         Converte l'immagine corrente da RGB a YCbCr, aggiornando lo stato.
@@ -110,3 +116,63 @@ class ImageModel:
 
         # Converti YCbCr di nuovo in formato BGR per compatibilità GUI (solo per visione)
         self._current_image = cv2.cvtColor(ycbcr_image, cv2.COLOR_YCrCb2BGR)
+
+    def get_ycbcr_channels(self):
+        """
+        Restituisce l'immagine corrente convertita in YCbCr per analisi.
+        """
+        if self._current_image is None:
+            raise RuntimeError("Nessuna immagine caricata.")
+
+        # Converti BGR (OpenCV) → RGB
+        rgb_image = cv2.cvtColor(self._current_image, cv2.COLOR_BGR2RGB)
+        ycbcr = convert_rgb_to_ycbcr(rgb_image)
+        return ycbcr
+
+    def get_ycbcr_figure(self):
+        """
+        Restituisce una figura matplotlib dei canali Y, Cb e Cr per la visualizzazione nella GUI.
+        """
+        ycbcr = self.get_ycbcr_channels()
+        return create_ycbcr_figure(ycbcr)
+
+    # === HSV MANUALE ===
+
+    def get_hsv_channels(self) -> np.ndarray:
+        """
+        Restituisce l'immagine corrente convertita in HSV (conversione manuale).
+        """
+        if self._current_image is None:
+            raise RuntimeError("Nessuna immagine caricata.")
+
+        # Converti BGR (OpenCV) → RGB
+        rgb_image = cv2.cvtColor(self._current_image, cv2.COLOR_BGR2RGB)
+        hsv = convert_rgb_to_hsv_manual(rgb_image)
+        return hsv
+
+    def get_hsv_figure(self, screen_width: int, screen_height: int) -> Figure:
+        """
+        Restituisce la figura matplotlib pronta per essere inserita nella GUI,
+        con immagine RGB a sinistra e canali HSV a destra (in verticale).
+        """
+        if self._current_image is None:
+            raise RuntimeError("Nessuna immagine caricata.")
+
+        rgb_image = cv2.cvtColor(self._current_image, cv2.COLOR_BGR2RGB)
+        hsv = convert_rgb_to_hsv_manual(rgb_image)
+        return create_hsv_figure(rgb_image, hsv, screen_width, screen_height)
+
+    def get_rgb_channels(self):
+        """
+        Restituisce l'immagine corrente in RGB.
+        """
+        if self._current_image is None:
+            raise RuntimeError("Nessuna immagine caricata.")
+        return cv2.cvtColor(self._current_image, cv2.COLOR_BGR2RGB)
+
+    def get_rgb_figure(self, screen_width: int, screen_height: int):
+        """
+        Restituisce la figura matplotlib con i canali R, G, B.
+        """
+        rgb = self.get_rgb_channels()
+        return create_rgb_figure(rgb, screen_width, screen_height)

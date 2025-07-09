@@ -1,5 +1,7 @@
 import cv2
 from model.image_model import ImageModel
+from model.color_tools import create_rgb_histogram_figure
+
 
 class AppController:
     """
@@ -74,10 +76,39 @@ class AppController:
         """
         self.model.set_current_image(new_image)
 
-
     def convert_to_ycbcr(self):
         """
         Richiama il model per convertire l'immagine in YCbCr.
         """
         self.model.convert_to_ycbcr()
+
+    def get_ycbcr_figure(self):
+        """
+        Richiama il model per ottenere una figura matplotlib con i canali Y, Cb e Cr.
+        """
+        return self.model.get_ycbcr_figure()
+
+    def get_hsv_figure(self, screen_width: int, screen_height: int):
+        """
+        Ottiene la figura matplotlib che mostra i canali HSV dal model.
+        """
+        return self.model.get_hsv_figure(screen_width, screen_height)
+
+    def get_rgb_figure(self, screen_width: int, screen_height: int):
+        return self.model.get_rgb_figure(screen_width, screen_height)
+
+
+    def get_rgb_histogram_figure(self, screen_width: int, screen_height: int, separate: bool):
+        """
+        Genera una figura matplotlib degli istogrammi RGB (separati o compositi).
+        """
+        image = self.model.get_current_image()
+        if image is None:
+            raise RuntimeError("Nessuna immagine caricata.")
+
+        # Converti da BGR (OpenCV) a RGB
+        import cv2
+        rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+        return create_rgb_histogram_figure(rgb_image, screen_width, screen_height, separate)
 
