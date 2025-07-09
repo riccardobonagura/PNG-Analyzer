@@ -251,13 +251,16 @@ def compute_rgb_histograms(rgb_image: np.ndarray, num_bins: int = 256):
     return hist_r, hist_g, hist_b, bins
 
 
-def create_rgb_histogram_figure(rgb_image: np.ndarray, screen_width: int, screen_height: int, separate: bool,
-                                dpi=100) -> Figure:
+def create_rgb_histogram_figure(rgb_image: np.ndarray, screen_width: int, screen_height: int,
+                                 dpi=100) -> Figure:
     """
-    Crea una figura matplotlib che mostra gli istogrammi RGB.
+    Crea una figura matplotlib che mostra 4 istogrammi:
+    - Istogramma R (Rosso)
+    - Istogramma G (Verde)
+    - Istogramma B (Blu)
+    - Istogramma composito con curve sovrapposte
 
-    - Se `separate=True`, visualizza 4 subplot: R, G, B e composito sovrapposto.
-    - Se `separate=False`, visualizza solo il composito sovrapposto.
+    L'immagine viene elaborata a basso livello.
     """
 
     hist_r, hist_g, hist_b, bins = compute_rgb_histograms(rgb_image)
@@ -267,47 +270,35 @@ def create_rgb_histogram_figure(rgb_image: np.ndarray, screen_width: int, screen
     fig_width = int((screen_width * margin_factor) / dpi)
     fig_height = int((screen_height * margin_factor) / dpi)
 
-    if separate:
-        fig = Figure(figsize=(fig_width, fig_height), dpi=dpi)
-        axs = [
-            fig.add_subplot(2, 2, 1),  # R
-            fig.add_subplot(2, 2, 2),  # G
-            fig.add_subplot(2, 2, 3),  # B
-            fig.add_subplot(2, 2, 4),  # Composito
-        ]
+    fig = Figure(figsize=(fig_width, fig_height), dpi=dpi)
+    axs = [
+        fig.add_subplot(2, 2, 1),  # R
+        fig.add_subplot(2, 2, 2),  # G
+        fig.add_subplot(2, 2, 3),  # B
+        fig.add_subplot(2, 2, 4),  # Composito
+    ]
 
-        axs[0].bar(bins, hist_r, color='red')
-        axs[0].set_title("Istogramma R (Rosso)")
-        axs[1].bar(bins, hist_g, color='green')
-        axs[1].set_title("Istogramma G (Verde)")
-        axs[2].bar(bins, hist_b, color='blue')
-        axs[2].set_title("Istogramma B (Blu)")
+    axs[0].bar(bins, hist_r, color='red')
+    axs[0].set_title("Istogramma R (Rosso)")
 
-        axs[3].plot(bins, hist_r, color='red', label='R')
-        axs[3].plot(bins, hist_g, color='green', label='G')
-        axs[3].plot(bins, hist_b, color='blue', label='B')
-        axs[3].set_title("Composito RGB (curve sovrapposte)")
-        axs[3].legend()
+    axs[1].bar(bins, hist_g, color='green')
+    axs[1].set_title("Istogramma G (Verde)")
 
-        for ax in axs:
-            ax.set_xlim([0, 255])
-            ax.set_xlabel("Valore di Intensità")
-            ax.set_ylabel("Frequenza")
-            ax.grid(True)
+    axs[2].bar(bins, hist_b, color='blue')
+    axs[2].set_title("Istogramma B (Blu)")
 
-        fig.tight_layout()
+    axs[3].plot(bins, hist_r, color='red', label='R')
+    axs[3].plot(bins, hist_g, color='green', label='G')
+    axs[3].plot(bins, hist_b, color='blue', label='B')
+    axs[3].set_title("Istogramma composito RGB")
+    axs[3].legend()
 
-    else:
-        fig = Figure(figsize=(fig_width, fig_height), dpi=dpi)
-        ax = fig.add_subplot(1, 1, 1)
-        ax.plot(bins, hist_r, color='red', label='R')
-        ax.plot(bins, hist_g, color='green', label='G')
-        ax.plot(bins, hist_b, color='blue', label='B')
-        ax.set_title("Istogramma RGB composito (curve sovrapposte)")
+    for ax in axs:
         ax.set_xlim([0, 255])
         ax.set_xlabel("Valore di Intensità")
         ax.set_ylabel("Frequenza")
-        ax.legend()
         ax.grid(True)
 
+    fig.tight_layout()
     return fig
+

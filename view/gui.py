@@ -51,13 +51,12 @@ class AppView:
         self.hsv_split_button = tk.Button(self.button_frame, text="🌈 Mostra H, S, V", command=self.toggle_hsv)
         self.hsv_split_button.pack_forget()
 
-        self.custom_button = tk.Button(self.root, text="📊 Custom", command=self.toggle_custom_view)
-        self.custom_button.place_forget()  # sarà mostrato solo in modalità comparata
+        self.custom_button = tk.Button(self.button_frame, text="📊 Custom", command=self.toggle_custom_view)
+        self.custom_button.pack_forget()
 
         self.separate_var = tk.BooleanVar(value=False)
-        self.separate_checkbox = tk.Checkbutton(self.root, text="Separa", variable=self.separate_var,
-                                                command=self.refresh_custom_view)
-        self.separate_checkbox.place_forget()
+
+
 
 
         self.image_panel = tk.Label(self.root)
@@ -111,7 +110,6 @@ class AppView:
 
         self.current_color_mode = None
         self.custom_button.place_forget()
-        self.separate_checkbox.place_forget()
         self.custom_mode_active = False
 
 
@@ -226,6 +224,12 @@ class AppView:
             self.ycbcr_canvas.draw()
             self.ycbcr_canvas.get_tk_widget().pack(pady=10, fill='both', expand=True)
 
+            self.current_color_mode = 'ycbcr'
+            self.custom_mode_active = False
+            self.custom_button.pack(side="left", padx=10)
+
+
+
         except Exception as e:
             messagebox.showerror("Errore", str(e))
 
@@ -251,45 +255,44 @@ class AppView:
         if not self.controller.is_image_loaded():
             return
 
+        # Pulisce qualsiasi visualizzazione attiva
         self.clear_all_canvases()
         self.image_panel.pack_forget()
 
-        # BLOCCO 1 – Rimuove la visualizzazione e i controlli custom se attiva
+        # BLOCCO 1 – Se è attiva la visualizzazione RGB, la disattiva
         if self.rgb_canvas:
             self.rgb_canvas.get_tk_widget().destroy()
             self.rgb_canvas = None
             self.image_panel.pack(pady=10)
-            self.custom_button.place_forget()
-            self.separate_checkbox.place_forget()
+            self.custom_button.pack_forget()
             self.current_color_mode = None
             return
 
-        # BLOCCO 2 – Attiva la visualizzazione RGB e mostra i controlli custom
+        # BLOCCO 2 – Attiva la visualizzazione RGB
         fig = self.controller.get_rgb_figure(self.root.winfo_screenwidth(), self.root.winfo_screenheight())
-        from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
         self.rgb_canvas = FigureCanvasTkAgg(fig, master=self.display_frame)
         self.rgb_canvas.draw()
         self.rgb_canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
 
+        # Mostra i controlli custom (visibili solo per RGB)
+        self.custom_button.pack(side="left", padx=10)
+
+        # Aggiorna stato interno
         self.current_color_mode = 'rgb'
         self.custom_mode_active = False
-        self.custom_button.place(x=10, y=self.root.winfo_height() - 40)
-        self.separate_checkbox.place(x=100, y=self.root.winfo_height() - 40)
 
     def toggle_custom_view(self):
-        if self.current_color_mode != 'rgb':
+        if not self.controller.is_image_loaded():
             return
 
-        if self.custom_mode_active:
-            # Torna alla visualizzazione RGB comparata
-            self.toggle_rgb()
-        else:
-            self.clear_all_canvases()
-            self.image_panel.pack_forget()
+        self.clear_all_canvases()
+        self.image_panel.pack_forget()
+
+        # Caso: RGB
+        if self.current_color_mode == 'rgb':
             fig = self.controller.get_rgb_histogram_figure(
                 self.root.winfo_screenwidth(),
-                self.root.winfo_screenheight(),
-                self.separate_var.get()
+                self.root.winfo_screenheight()
             )
             from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
             self.rgb_canvas = FigureCanvasTkAgg(fig, master=self.display_frame)
@@ -297,8 +300,24 @@ class AppView:
             self.rgb_canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
             self.custom_mode_active = True
 
-    def refresh_custom_view(self):
-        if self.custom_mode_active:
-            self.toggle_custom_view()
-            self.toggle_custom_view()
+        # Caso: YCbCr
+        elif self.current_color_mode == 'ycbcr':
+            fig = self.controller.get_ycbcr_subsampling_figure(
+                self.root.winfo_screenwidth(),
+                self.root.winfo_screenheight()
+            )
+            from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+            self.ycbcr_canvas = FigureCanvasTkAgg(fig, master=self.display_frame)
+            self.ycbcr_canvas.draw()
+            self.ycbcr_canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+            self.custom_mode_active = True
+
+        # Se cliccato di nuovo, ripristina la vista base del colore attivo
+        else:
+            self.custom_mode_active = False
+            if self.current_color_mode == 'rgb':
+                self.toggle_rgb()
+            elif self.current_color_mode == 'ycbcr':
+                self.show_ycbcr_channels()
+
 

@@ -97,10 +97,10 @@ class AppController:
     def get_rgb_figure(self, screen_width: int, screen_height: int):
         return self.model.get_rgb_figure(screen_width, screen_height)
 
-
-    def get_rgb_histogram_figure(self, screen_width: int, screen_height: int, separate: bool):
+    def get_rgb_histogram_figure(self, screen_width: int, screen_height: int):
         """
-        Genera una figura matplotlib degli istogrammi RGB (separati o compositi).
+        Genera una figura matplotlib che mostra 4 istogrammi:
+        R, G, B e composito RGB con curve sovrapposte.
         """
         image = self.model.get_current_image()
         if image is None:
@@ -110,5 +110,85 @@ class AppController:
         import cv2
         rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-        return create_rgb_histogram_figure(rgb_image, screen_width, screen_height, separate)
+        return create_rgb_histogram_figure(rgb_image, screen_width, screen_height)
+
+
+
+
+
+    # GESTIONE SETTORE SUBSAMPLING
+
+    def get_ycbcr_subsampling_figure(self, screen_width: int, screen_height: int) -> 'Figure':
+        """
+        Genera la figura matplotlib per visualizzare:
+        - Immagine originale YCbCr
+        - Subsampling 4:2:2 e 4:2:0
+        - Info: risoluzione cromatica, memoria, matrici 4x4 con Y, Cb, Cr
+        """
+        from model.subsampling_tools import (
+            convert_rgb_to_ycbcr,
+            subsample_422,
+            subsample_420,
+            extract_center_matrix,
+            compute_chroma_memory_usage
+        )
+        from model.subsampling_figure import create_subsampling_figure
+        import cv2
+
+        image_bgr = self.model.get_current_image()
+        if image_bgr is None:
+            raise RuntimeError("Nessuna immagine caricata.")
+
+        image_rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
+        ycbcr_image = convert_rgb_to_ycbcr(image_rgb)
+
+        # Subsampling
+        image_422 = subsample_422(ycbcr_image)
+        image_420 = subsample_420(ycbcr_image)
+
+        # Risoluzioni e memoria
+        h, w = ycbcr_image.shape[:2]
+        y_res = (w, h)
+        cbcr_res_422 = (w // 2, h)
+        cbcr_res_420 = (w // 2, h // 2)
+
+        mem_orig = compute_chroma_memory_usage(ycbcr_image, "444")
+        mem_422 = compute_chroma_memory_usage(ycbcr_image, "422")
+        mem_420 = compute_chroma_memory_usage(ycbcr_image, "420")
+
+        # Matrici 4x4 dal centro
+        center_block = extract_center_matrix(ycbcr_image, size=4)
+        y4 = center_block[:, :, 0]
+        cb4 = center_block[:, :, 1]
+        cr4 = center_block[:, :, 2]
+
+        center_422 = extract_center_matrix(image_422, size=4)
+        y4_422 = center_422[:, :, 0]
+        cb4_422 = center_422[:, :, 1]
+        cr4_422 = center_422[:, :, 2]
+
+        center_420 = extract_center_matrix(image_420, size=4)
+        y4_420 = center_420[:, :, 0]
+        cb4_420 = center_420[:, :, 1]
+        cr4_420 = center_420[:, :, 2]
+
+        # Genera figura
+        fig = create_subsampling_figure(
+            image_rgb,
+            image_422,
+            image_420,
+            mem_orig,
+            mem_422,
+            mem_420,
+            y4, cb4, cr4,
+            y4_422, cb4_422, cr4_422,
+            y4_420, cb4_420, cr4_420,
+            screen_width,
+            screen_height
+        )
+
+        return fig
+
+
+
 
