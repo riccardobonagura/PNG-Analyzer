@@ -75,10 +75,12 @@ class AppView:
         self.details_button.bind("<Leave>", self.hide_metadata_hover)
 
     def clear_all_canvases(self):
-        for canvas in [self.rgb_canvas, self.ycbcr_canvas, self.hsv_canvas]:
+        for canvas in [self.rgb_canvas, self.ycbcr_canvas, self.hsv_canvas, getattr(self, "hsv_custom_canvas", None)]:
             if canvas:
                 canvas.get_tk_widget().destroy()
         self.rgb_canvas = self.ycbcr_canvas = self.hsv_canvas = None
+        if hasattr(self, "hsv_custom_canvas"):
+            self.hsv_custom_canvas = None
 
     def reset_session(self):
         self.controller.reset_image()
@@ -324,13 +326,15 @@ class AppView:
                 self.custom_mode_active = True
                 self._pack_buttons(mode='custom_ycbcr')
 
+
             elif self.current_color_mode == 'hsv':
                 print("custom su HSV: scatter plot")
-                fig = self.controller.get_hsv_figure(
+                fig = self.controller.get_hsv_scatter_comparison_figure(
                     self.root.winfo_screenwidth(), self.root.winfo_screenheight())
                 self.hsv_custom_canvas = FigureCanvasTkAgg(fig, master=self.display_frame)
                 self.hsv_custom_canvas.draw()
                 self.hsv_custom_canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+                print("Custom HSV canvas packed:", self.hsv_custom_canvas)
                 self.display_frame.update_idletasks()  # Forza refresh
                 self.custom_mode_active = True
                 self._pack_buttons(mode='hsv')

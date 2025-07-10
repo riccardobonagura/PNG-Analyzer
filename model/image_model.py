@@ -196,32 +196,31 @@ class ImageModel:
             dpi=dpi
         )
 
+    def get_hsv_scatter_comparison_figure(self, screen_width: int, screen_height: int, dpi: int = 100):
+        """
+        Restituisce una figura 2x2 con:
+        - Immagine RGB originale (in alto a sinistra)
+        - Scatter plot HSV originale (in alto a destra)
+        - Immagine RGB bilanciata gray world (in basso a sinistra)
+        - Scatter plot HSV bilanciata (in basso a destra)
+        """
+        if self._current_image is None:
+            raise RuntimeError("Nessuna immagine caricata.")
 
-def get_hsv_scatter_comparison_figure(self, screen_width: int, screen_height: int, dpi: int = 100):
-    """
-    Restituisce una figura 2x2 con:
-    - Immagine RGB originale (in alto a sinistra)
-    - Scatter plot HSV originale (in alto a destra)
-    - Immagine RGB bilanciata gray world (in basso a sinistra)
-    - Scatter plot HSV bilanciata (in basso a destra)
-    """
-    if self._current_image is None:
-        raise RuntimeError("Nessuna immagine caricata.")
+        # Conversione da BGR (OpenCV) a RGB
 
-    # Conversione da BGR (OpenCV) a RGB
+        image_rgb = cv2.cvtColor(self._current_image, cv2.COLOR_BGR2RGB)
 
-    image_rgb = cv2.cvtColor(self._current_image, cv2.COLOR_BGR2RGB)
+        # White balance gray world (su RGB)
+        image_balanced_rgb = gray_world_white_balance(image_rgb)
 
-    # White balance gray world (su RGB)
-    image_balanced_rgb = gray_world_white_balance(image_rgb)
-
-    fig = scatter_figs.create_hsv_scatter_comparison_figure(
-        image_rgb=image_rgb,
-        image_balanced_rgb=image_balanced_rgb,
-        convert_rgb_to_hsv=convert_rgb_to_hsv_manual,
-        stride=8,
-        screen_width=screen_width,
-        screen_height=screen_height,
-        dpi=dpi
-    )
-    return fig
+        fig = scatter_figs.create_hsv_scatter_comparison_figure(
+            image_rgb=image_rgb,
+            image_balanced_rgb=image_balanced_rgb,
+            convert_rgb_to_hsv=convert_rgb_to_hsv_manual,
+            stride=8,
+            screen_width=screen_width,
+            screen_height=screen_height,
+            dpi=dpi
+        )
+        return fig

@@ -54,7 +54,7 @@ def create_hsv_scatter_comparison_figure(
     h_b, s_b, v_b, c_b = get_hsv_scatter_data(image_balanced_rgb)
 
     # Crea figura
-    fig = plt.figure(figsize=(screen_width/dpi, screen_height/dpi), dpi=dpi, constrained_layout=True)
+    fig = plt.figure(figsize=(screen_width * 0.9 /dpi, screen_height * 0.9 /dpi), dpi=dpi, constrained_layout=True)
 
     # Immagine RGB originale
     ax1 = fig.add_subplot(2, 2, 1)
