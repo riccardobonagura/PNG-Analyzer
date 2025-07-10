@@ -100,7 +100,6 @@ def compute_chroma_memory_usage(ycbcr: np.ndarray, mode: str) -> int:
     else:
         raise ValueError(f"Modalità non supportata: {mode}")
 
-
 def convert_ycbcr_to_rgb(image_ycbcr: np.ndarray) -> np.ndarray:
     """
     Converte un'immagine YCbCr (float64) in RGB (uint8), usando la formula BT.601.
@@ -119,4 +118,3 @@ def convert_ycbcr_to_rgb(image_ycbcr: np.ndarray) -> np.ndarray:
     flat_rgb = np.dot(flat_ycbcr - offset, T_inv.T)
     flat_rgb = np.clip(flat_rgb, 0, 255).astype(np.uint8)
     return flat_rgb.reshape(shape)
-

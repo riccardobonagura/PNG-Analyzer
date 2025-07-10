@@ -64,7 +64,16 @@ def create_subsampling_figure(
             for j in range(y.shape[1]):
                 row_text += f"{int(y[i, j])}/{int(cb[i, j])}/{int(cr[i, j])}  "
             matrix_text += row_text.strip() + "\n"
-        axs[2][col].text(0, 1, matrix_text, fontsize=7, family="monospace", va='top')
+
+        axs[2][col].text(
+            0.5, 0.5, matrix_text,
+            fontsize=8,
+            family="monospace",
+            va='center',
+            ha='center',
+            linespacing=1.4,
+            transform=axs[2][col].transAxes
+        )
         axs[2][col].axis("off")
 
     fig.tight_layout()
