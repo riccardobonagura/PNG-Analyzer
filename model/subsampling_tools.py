@@ -1,29 +1,5 @@
 import numpy as np
 
-def convert_rgb_to_ycbcr(image_rgb: np.ndarray) -> np.ndarray:
-    """
-    Converte un'immagine RGB (uint8, valori 0-255) in YCbCr (float64) usando la formula BT.601.
-    La conversione è fatta interamente a basso livello, pixel per pixel.
-    """
-    image_rgb = image_rgb.astype(np.float64)
-
-    # Matrice di conversione BT.601
-    T = np.array([
-        [0.299,     0.587,     0.114],
-        [-0.168736, -0.331264, 0.5],
-        [0.5,      -0.418688, -0.081312]
-    ])
-
-    offset = np.array([0, 128, 128])
-
-    # Applichiamo la trasformazione matrice-pixel (in modo vettoriale)
-    shape = image_rgb.shape
-    flat_rgb = image_rgb.reshape(-1, 3)
-    flat_ycbcr = np.dot(flat_rgb, T.T) + offset
-    image_ycbcr = flat_ycbcr.reshape(shape)
-
-    return image_ycbcr
-
 def subsample_422(ycbcr: np.ndarray) -> np.ndarray:
     """
     Applica subsampling 4:2:2 ai canali cromatici (Cb e Cr).

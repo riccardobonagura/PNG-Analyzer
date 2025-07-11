@@ -11,6 +11,9 @@ from model.color_tools import (
 )
 from matplotlib.figure import Figure
 
+from model.jpeg_pipeline import jpeg_encode_image
+
+
 class AppController:
     """
     Gestisce la logica di coordinamento tra View (GUI) e Model (ImageModel).
@@ -155,6 +158,7 @@ class AppController:
             raise RuntimeError("Nessuna immagine caricata.")
         rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         R, G, B = split_rgb_channels(rgb_image)
+
         # Manual histogram equalization and stretching (didactic)
         def manual_eq(channel):
             # Histogram equalization (manual)
@@ -165,12 +169,14 @@ class AppController:
             cdf_max = cdf_masked.max()
             eq = ((cdf_masked - cdf_min) * 255 / (cdf_max - cdf_min)).filled(0).astype(np.uint8)
             return eq[channel]
+
         def stretch(channel):
             c_min, c_max = np.min(channel), np.max(channel)
             if c_max - c_min == 0:
                 return np.zeros_like(channel)
             stretched = (channel - c_min) * 255.0 / (c_max - c_min)
             return stretched.astype(np.uint8)
+
         R_eq = manual_eq(R)
         G_eq = manual_eq(G)
         B_eq = manual_eq(B)
@@ -256,10 +262,10 @@ class AppController:
         fig_height = int((screen_height * 0.85) / dpi)
         fig = Figure(figsize=(fig_width, fig_height), dpi=dpi)
         axs = [
-            fig.add_subplot(1, 2, 1),        # Immagine RGB originale
-            fig.add_subplot(3, 2, 2),        # H
-            fig.add_subplot(3, 2, 4),        # S
-            fig.add_subplot(3, 2, 6),        # V
+            fig.add_subplot(1, 2, 1),  # Immagine RGB originale
+            fig.add_subplot(3, 2, 2),  # H
+            fig.add_subplot(3, 2, 4),  # S
+            fig.add_subplot(3, 2, 6),  # V
         ]
         axs[0].imshow(rgb_image)
         axs[0].set_title("Immagine RGB originale")
@@ -301,3 +307,23 @@ class AppController:
             screen_height=screen_height,
             dpi=dpi
         )
+
+    # CONVERSIONE PNG -> JPEG
+    def convert_image_to_jpeg(self, rgb_image: np.ndarray):
+        """
+        Orchestrates the JPEG conversion pipeline.
+        Args:
+            rgb_image: np.ndarray, shape (H, W, 3), dtype uint8
+        Returns:
+            jpeg_data: dict with quantized DCT blocks for Y, Cb, Cr channels
+        """
+
+        # Run the JPEG pipeline
+        jpeg_data = jpeg_encode_image(rgb_image)
+
+        # You can now use jpeg_data for further processing,
+        # such as saving to a file, passing to the view for display, etc.
+        
+        return jpeg_data
+
+

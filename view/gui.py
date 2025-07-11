@@ -1,17 +1,18 @@
 import tkinter as tk
-from tkinter import filedialog, messagebox
+from tkinter import filedialog, messagebox, Toplevel
 from PIL import Image, ImageTk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 class AppView:
     TITLE = "PNG Analyzer - GUI"
     BUTTON_LOAD_TEXT = "📂 Carica immagine PNG"
-    BUTTON_RESET_TEXT = "🔄 Nuova immagine"
+    BUTTON_RESET_TEXT = "⏪ Azzera"
     BUTTON_DETAILS_TEXT = "ℹ️ Dettagli"
     BUTTON_RGB_TEXT = "🔴 Mostra R, G, B"
     BUTTON_YCBCR_TEXT = "🔍 Mostra Y, Cb, Cr"
     BUTTON_HSV_TEXT = "🌈 Mostra H, S, V"
     BUTTON_CUSTOM_TEXT = "📊 Custom"
+    BUTTON_JPEG_TEXT = "🔄 Converti in JPEG"
 
     MSGBOX_LOAD_ERROR = "Errore"
     MSGBOX_LOAD_ERROR_TEXT = "Impossibile caricare l'immagine."
@@ -55,6 +56,7 @@ class AppView:
         self.metadata_label = tk.Label(self.root, font=self.METADATA_FONT, justify="left")
         self.metadata_label.pack_forget()
 
+        self.jpeg_button = tk.Button(self.button_frame, text=self.BUTTON_JPEG_TEXT, command=self.on_jpeg_clicked)
         self.load_button = tk.Button(self.button_frame, text=self.BUTTON_LOAD_TEXT, command=self.load_image)
         self.reset_button = tk.Button(self.button_frame, text=self.BUTTON_RESET_TEXT, command=self.reset_session)
         self.details_button = tk.Button(self.button_frame, text=self.BUTTON_DETAILS_TEXT, command=self.show_full_image)
@@ -70,6 +72,7 @@ class AppView:
         self.ycbcr_split_button.pack_forget()
         self.hsv_split_button.pack_forget()
         self.custom_button.pack_forget()
+        self.jpeg_button.pack_forget()
 
         self.details_button.bind("<Enter>", self.show_metadata_hover)
         self.details_button.bind("<Leave>", self.hide_metadata_hover)
@@ -98,7 +101,7 @@ class AppView:
             self.metadata_popup = None
 
     def _hide_all_buttons(self):
-        for button in [self.load_button, self.reset_button, self.details_button,
+        for button in [self.jpeg_button, self.load_button, self.reset_button, self.details_button,
                        self.rgb_split_button, self.ycbcr_split_button,
                        self.hsv_split_button, self.custom_button]:
             button.pack_forget()
@@ -108,46 +111,77 @@ class AppView:
         if mode == 'initial':
             self.load_button.pack(side="left", padx=10)
         elif mode == 'image_loaded':
-            self.reset_button.pack(side="right", padx=10)
+            #bottoni a sinistra
+            #self.load_button.pack(side="left", padx=10)
             self.details_button.pack(side="left", padx=10)
             self.rgb_split_button.pack(side="left", padx=10)
             self.ycbcr_split_button.pack(side="left", padx=10)
             self.hsv_split_button.pack(side="left", padx=10)
+
+            #bottoni a destra
+            self.reset_button.pack(side="right", padx=10)
+            self.jpeg_button.pack(side="right", padx=10)
+
         elif mode == 'ycbcr':
-            self.reset_button.pack(side="right", padx=10)
+
+            #self.load_button.pack(side="left", padx=10)
             self.details_button.pack(side="left", padx=10)
             self.rgb_split_button.pack(side="left", padx=10)
             self.ycbcr_split_button.pack(side="left", padx=10)
             self.hsv_split_button.pack(side="left", padx=10)
             self.custom_button.pack(side="left", padx=10)
+
+            self.reset_button.pack(side="right", padx=10)
+            self.jpeg_button.pack(side="right", padx=10)
+
         elif mode == 'rgb':
-            self.reset_button.pack(side="right", padx=10)
+
+           # self.load_button.pack(side="left", padx=10)
             self.details_button.pack(side="left", padx=10)
             self.rgb_split_button.pack(side="left", padx=10)
             self.ycbcr_split_button.pack(side="left", padx=10)
             self.hsv_split_button.pack(side="left", padx=10)
             self.custom_button.pack(side="left", padx=10)
+
+            self.reset_button.pack(side="right", padx=10)
+            self.jpeg_button.pack(side="right", padx=10)
+
         elif mode == 'hsv':
-            self.reset_button.pack(side="right", padx=10)
+
+            #self.load_button.pack(side="left", padx=10)
             self.details_button.pack(side="left", padx=10)
             self.rgb_split_button.pack(side="left", padx=10)
             self.ycbcr_split_button.pack(side="left", padx=10)
             self.hsv_split_button.pack(side="left", padx=10)
             self.custom_button.pack(side="left", padx=10)
+
+            self.reset_button.pack(side="right", padx=10)
+            self.jpeg_button.pack(side="right", padx=10)
+
         elif mode == 'custom_rgb':
-            self.reset_button.pack(side="right", padx=10)
+
+            #self.load_button.pack(side="left", padx=10)
             self.details_button.pack(side="left", padx=10)
             self.rgb_split_button.pack(side="left", padx=10)
             self.ycbcr_split_button.pack(side="left", padx=10)
             self.hsv_split_button.pack(side="left", padx=10)
             self.custom_button.pack(side="left", padx=10)
+
+            self.reset_button.pack(side="right", padx=10)
+            self.jpeg_button.pack(side="right", padx=10)
+
         elif mode == 'custom_ycbcr':
-            self.reset_button.pack(side="right", padx=10)
+
+
+           # self.load_button.pack(side="left", padx=10)
             self.details_button.pack(side="left", padx=10)
             self.rgb_split_button.pack(side="left", padx=10)
             self.ycbcr_split_button.pack(side="left", padx=10)
             self.hsv_split_button.pack(side="left", padx=10)
             self.custom_button.pack(side="left", padx=10)
+
+            self.reset_button.pack(side="right", padx=10)
+            self.jpeg_button.pack(side="right", padx=10)
 
     def load_image(self):
         filepath = filedialog.askopenfilename(filetypes=[("PNG files", "*.png")])
@@ -350,3 +384,70 @@ class AppView:
                     self.toggle_hsv()
         except Exception as e:
             messagebox.showerror(self.MSGBOX_LOAD_ERROR, self.MSGBOX_CUSTOM_ERROR_TEXT.format(str(e)))
+
+    # CONVERSIONE RGB -> JPEG
+    def on_jpeg_clicked(self):
+        """Handler per il bottone 'Converti in JPEG'"""
+        if not self.controller.is_image_loaded():
+            messagebox.showerror("Errore", "Carica prima un'immagine PNG.")
+            return
+
+        # Ottieni l'immagine corrente in RGB dal model (BGR -> RGB)
+        bgr_image = self.controller.get_current_image()
+        if bgr_image is None:
+            messagebox.showerror("Errore", "Nessuna immagine caricata.")
+            return
+
+        import cv2
+        rgb_image = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2RGB)
+
+        # Esegui la conversione JPEG tramite il controller
+        jpeg_data = self.controller.convert_image_to_jpeg(rgb_image)
+        if jpeg_data is None:
+            messagebox.showerror("Errore", "Errore durante la conversione JPEG.")
+            return
+
+        # Chiedi dove salvare l'immagine JPEG
+        filepath = filedialog.asksaveasfilename(
+            defaultextension=".jpg",
+            filetypes=[("JPEG files", "*.jpg"), ("All files", "*.*")]
+        )
+        if not filepath:
+            return
+
+        # Salva l'immagine JPEG (qui usiamo la PIL Image dall'array RGB originale)
+        try:
+            img_pil = Image.fromarray(jpeg_data, "YCbCr")
+            img_pil.save(filepath, "JPEG")
+        except Exception as e:
+            messagebox.showerror("Errore", f"Errore nel salvataggio JPEG:\n{e}")
+            return
+
+        # Notifica l'utente con un popup centrale e un pulsante download (apre la cartella)
+        self.show_jpeg_ready_popup(filepath)
+
+
+
+    def show_jpeg_ready_popup(self, filepath):
+        """Displays a centered popup with a download confirmation and an OK button to close it."""
+        popup = Toplevel(self.root)
+        popup.title("JPEG pronto")
+        popup.geometry("+%d+%d" % (
+            self.root.winfo_rootx() + int(self.root.winfo_width() / 2) - 150,
+            self.root.winfo_rooty() + int(self.root.winfo_height() / 2) - 75
+        ))
+        popup.transient(self.root)
+        popup.grab_set()
+        popup.resizable(False, False)
+
+        msg = tk.Label(popup, text="La conversione in formato JPEG\nè stata scaricata correttamente.",
+                       font=("Arial", 13))
+        msg.pack(pady=(20, 10))
+
+        # OK button that closes the popup
+        ok_button = tk.Button(popup, text="OK", font=("Arial", 11), width=10, command=popup.destroy)
+        ok_button.pack(pady=(0, 20))
+
+        popup.update_idletasks()
+        popup.lift()
+        popup.focus_force()

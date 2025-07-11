@@ -148,7 +148,7 @@ class ImageModel:
         image_rgb = cv2.cvtColor(self._current_image, cv2.COLOR_BGR2RGB)
 
         # Conversione in YCbCr
-        ycbcr = tools.convert_rgb_to_ycbcr(image_rgb)
+        ycbcr = convert_rgb_to_ycbcr(image_rgb)
         ycbcr_422 = tools.subsample_422(ycbcr)
         ycbcr_420 = tools.subsample_420(ycbcr)
 
