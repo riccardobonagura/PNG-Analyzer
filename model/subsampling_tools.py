@@ -1,9 +1,36 @@
-import numpy as np
+# ========================================================
+# 0. TABELLA DELLE FIRME DELLE FUNZIONI IN QUESTO FILE
+#
+# subsample_422(ycbcr: np.ndarray) -> np.ndarray
+#     # Applica subsampling 4:2:2 ai canali Cb/Cr, mantiene le copie orizzontali.
+#
+# subsample_420(ycbcr: np.ndarray) -> np.ndarray
+#     # Applica subsampling 4:2:0 ai canali Cb/Cr, mantiene le copie su blocchi 2x2.
+#
+# extract_center_matrix(ycbcr: np.ndarray, size: int = 10) -> np.ndarray
+#     # Estrae una matrice size×size dal centro dell’immagine YCbCr.
+#
+# compute_chroma_memory_usage(ycbcr: np.ndarray, mode: str) -> int
+#     # Calcola lo spazio occupato dai canali Cb/Cr (in byte) in base alla modalità.
+#
+# convert_ycbcr_to_rgb(image_ycbcr: np.ndarray) -> np.ndarray
+#     # Converte un’immagine YCbCr (float64) in RGB (uint8) usando la formula BT.601.
+# ========================================================
 
+
+
+# ========================================================
+# 1. IMPORT NECESSARI
+import numpy as np
+# ========================================================
+
+# ========================================================
+# 2. SUBSAMPLING 4:2:2 (lazy, mantiene le copie)
 def subsample_422(ycbcr: np.ndarray) -> np.ndarray:
     """
     Applica subsampling 4:2:2 ai canali cromatici (Cb e Cr).
     Per ogni coppia orizzontale di pixel, mantiene uno solo dei valori.
+    Restituisce array YCbCr con stessi shape e dtype dell'input.
     """
     Y = ycbcr[:, :, 0]
     Cb = ycbcr[:, :, 1]
@@ -25,11 +52,15 @@ def subsample_422(ycbcr: np.ndarray) -> np.ndarray:
                 subsampled_Cr[i, j + 1] = cr_val
 
     return np.clip(np.stack([Y, subsampled_Cb, subsampled_Cr], axis=2), 0, 255)
+# ========================================================
 
+# ========================================================
+# 3. SUBSAMPLING 4:2:0 (lazy, mantiene le copie)
 def subsample_420(ycbcr: np.ndarray) -> np.ndarray:
     """
     Applica subsampling 4:2:0 ai canali cromatici (Cb e Cr).
     Per ogni blocco 2x2, mantiene solo il valore in alto a sinistra.
+    Restituisce array YCbCr con stessi shape e dtype dell'input.
     """
     Y = ycbcr[:, :, 0]
     Cb = ycbcr[:, :, 1]
@@ -50,8 +81,11 @@ def subsample_420(ycbcr: np.ndarray) -> np.ndarray:
                         subsampled_Cr[i+di, j+dj] = cr_val
 
     return np.clip(np.stack([Y, subsampled_Cb, subsampled_Cr], axis=2), 0, 255)
+# ========================================================
 
-def extract_center_matrix(ycbcr: np.ndarray, size=10) -> np.ndarray:
+# ========================================================
+# 4. ESTRAZIONE MATRICE DAL CENTRO
+def extract_center_matrix(ycbcr: np.ndarray, size: int = 10) -> np.ndarray:
     """
     Estrae una matrice size×size dal centro dell'immagine YCbCr.
     Ogni elemento è un vettore [Y, Cb, Cr].
@@ -60,7 +94,10 @@ def extract_center_matrix(ycbcr: np.ndarray, size=10) -> np.ndarray:
     start_y = h // 2 - size // 2
     start_x = w // 2 - size // 2
     return ycbcr[start_y:start_y+size, start_x:start_x+size, :]
+# ========================================================
 
+# ========================================================
+# 5. CALCOLO OCCUPAZIONE MEMORIA CANALI CROMATICI
 def compute_chroma_memory_usage(ycbcr: np.ndarray, mode: str) -> int:
     """
     Calcola lo spazio occupato dai canali Cb e Cr (in byte) in base alla modalità di subsampling.
@@ -75,7 +112,10 @@ def compute_chroma_memory_usage(ycbcr: np.ndarray, mode: str) -> int:
         return 2 * (height // 2) * (width // 2)
     else:
         raise ValueError(f"Modalità non supportata: {mode}")
+# ========================================================
 
+# ========================================================
+# 6. CONVERSIONE DA YCbCr A RGB (manuale, BT.601)
 def convert_ycbcr_to_rgb(image_ycbcr: np.ndarray) -> np.ndarray:
     """
     Converte un'immagine YCbCr (float64) in RGB (uint8), usando la formula BT.601.
@@ -94,3 +134,4 @@ def convert_ycbcr_to_rgb(image_ycbcr: np.ndarray) -> np.ndarray:
     flat_rgb = np.dot(flat_ycbcr - offset, T_inv.T)
     flat_rgb = np.clip(flat_rgb, 0, 255).astype(np.uint8)
     return flat_rgb.reshape(shape)
+# ========================================================

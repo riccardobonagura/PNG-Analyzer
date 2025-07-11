@@ -1,6 +1,33 @@
+# ========================================================
+# 0. TABELLA DELLE FIRME DELLE FUNZIONI IN QUESTO FILE
+#
+# create_subsampling_figure(
+#     image_rgb: np.ndarray,
+#     image_422: np.ndarray,
+#     image_420: np.ndarray,
+#     mem_orig: int,
+#     mem_422: int,
+#     mem_420: int,
+#     y4: np.ndarray, cb4: np.ndarray, cr4: np.ndarray,
+#     y4_422: np.ndarray, cb4_422: np.ndarray, cr4_422: np.ndarray,
+#     y4_420: np.ndarray, cb4_420: np.ndarray, cr4_420: np.ndarray,
+#     screen_width: int,
+#     screen_height: int,
+#     dpi: int = 100
+# ) -> Figure
+#     # Crea una figura matplotlib che confronta immagini originali e subsamplate,
+#     # mostra la memoria occupata, le risoluzioni cromatiche e le matrici centrali Y/Cb/Cr.
+# ========================================================
+
+
+# ========================================================
+# 1. IMPORT NECESSARI
 from matplotlib.figure import Figure
 import numpy as np
+# ========================================================
 
+# ========================================================
+# 2. CREAZIONE FIGURA DI SUBSAMPLING
 def create_subsampling_figure(
     image_rgb: np.ndarray,
     image_422: np.ndarray,
@@ -78,3 +105,4 @@ def create_subsampling_figure(
 
     fig.tight_layout()
     return fig
+# ========================================================

@@ -1,5 +1,36 @@
-import numpy as np
+# ========================================================
+# 0. TABELLA DELLE FIRME DELLE FUNZIONI IN QUESTO FILE
+#
+# convert_rgb_to_ycbcr(rgb_image: np.ndarray) -> np.ndarray
+#     # Converte un’immagine RGB uint8 in YCbCr uint8 con shape (H, W, 3)
+#
+# split_ycbcr_channels(ycbcr_image: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]
+#     # Restituisce i canali Y, Cb, Cr come array 2D
+#
+# convert_rgb_to_hsv_manual(rgb_image: np.ndarray) -> np.ndarray
+#     # Converte un’immagine RGB in HSV manualmente, restituisce HSV uint8
+#
+# split_hsv_channels(hsv_image: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]
+#     # Restituisce i canali H, S, V come array 2D
+#
+# split_rgb_channels(rgb_image: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]
+#     # Restituisce i canali R, G, B come array 2D
+#
+# compute_rgb_histograms(rgb_image: np.ndarray, num_bins: int = 256) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+#     # Calcola gli istogrammi dei tre canali R, G, B, restituisce hist_r, hist_g, hist_b, bins
+#
+# gray_world_white_balance(img_rgb: np.ndarray) -> np.ndarray
+#     # Applica il bilanciamento del bianco "gray world" su un’immagine RGB
+# ========================================================
 
+
+# ========================================================
+# 1. IMPORT NECESSARI
+import numpy as np
+# ========================================================
+
+# ========================================================
+# 2. CONVERSIONE DA RGB A YCbCr
 def convert_rgb_to_ycbcr(rgb_image: np.ndarray) -> np.ndarray:
     """
     Converte un'immagine RGB (uint8) in YCbCr (standard BT.601) usando operazioni matriciali.
@@ -16,7 +47,10 @@ def convert_rgb_to_ycbcr(rgb_image: np.ndarray) -> np.ndarray:
     ycbcr = np.stack((Y, Cb, Cr), axis=-1)
     ycbcr = np.clip(ycbcr, 0, 255).astype(np.uint8)
     return ycbcr
+# ========================================================
 
+# ========================================================
+# 3. SEPARAZIONE CANALI YCbCr
 def split_ycbcr_channels(ycbcr_image: np.ndarray):
     """
     Restituisce i canali Y, Cb, Cr come array 2D.
@@ -27,7 +61,10 @@ def split_ycbcr_channels(ycbcr_image: np.ndarray):
     Cb = ycbcr_image[:, :, 1]
     Cr = ycbcr_image[:, :, 2]
     return Y, Cb, Cr
+# ========================================================
 
+# ========================================================
+# 4. CONVERSIONE DA RGB A HSV (calcolo manuale)
 def convert_rgb_to_hsv_manual(rgb_image: np.ndarray) -> np.ndarray:
     """
     Converte un'immagine RGB in HSV manualmente, senza usare funzioni di libreria.
@@ -55,7 +92,10 @@ def convert_rgb_to_hsv_manual(rgb_image: np.ndarray) -> np.ndarray:
     V = (V * 255).astype(np.uint8)
     hsv_image = np.stack([H, S, V], axis=-1)
     return hsv_image
+# ========================================================
 
+# ========================================================
+# 5. SEPARAZIONE CANALI HSV
 def split_hsv_channels(hsv_image: np.ndarray):
     """
     Restituisce i canali H, S, V come array 2D.
@@ -66,7 +106,10 @@ def split_hsv_channels(hsv_image: np.ndarray):
     S = hsv_image[:, :, 1]
     V = hsv_image[:, :, 2]
     return H, S, V
+# ========================================================
 
+# ========================================================
+# 6. SEPARAZIONE CANALI RGB
 def split_rgb_channels(rgb_image: np.ndarray):
     """
     Restituisce i canali R, G, B come array 2D.
@@ -77,11 +120,13 @@ def split_rgb_channels(rgb_image: np.ndarray):
     G = rgb_image[:, :, 1]
     B = rgb_image[:, :, 2]
     return R, G, B
+# ========================================================
 
+# ========================================================
+# 7. ISTOGRAMMI RGB MANUALI
 def compute_rgb_histograms(rgb_image: np.ndarray, num_bins: int = 256):
     """
     Calcola gli istogrammi dei tre canali R, G, B.
-    Non usa funzioni di libreria, ma opera a basso livello.
     Ritorna:
     - hist_r, hist_g, hist_b: array (256,) con le occorrenze per ogni valore [0-255]
     - bins: array con i valori dei bin centrati
@@ -101,9 +146,11 @@ def compute_rgb_histograms(rgb_image: np.ndarray, num_bins: int = 256):
         hist_b[val] += 1
     bins = np.arange(num_bins)
     return hist_r, hist_g, hist_b, bins
+# ========================================================
 
-
-def gray_world_white_balance(img_rgb):
+# ========================================================
+# 8. BILANCIAMENTO DEL BIANCO (GRAY WORLD)
+def gray_world_white_balance(img_rgb: np.ndarray) -> np.ndarray:
     """
     Applica il bilanciamento del bianco "gray world" su un'immagine RGB.
     img_rgb: array numpy H x W x 3, dtype uint8 (valori 0-255)
@@ -130,3 +177,4 @@ def gray_world_white_balance(img_rgb):
     # Clippa e converte in uint8
     img_balanced = np.clip(img_balanced, 0, 255).astype(np.uint8)
     return img_balanced
+# ========================================================

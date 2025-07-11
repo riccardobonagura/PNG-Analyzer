@@ -1,18 +1,37 @@
+# ========================================================
+# 0. TABELLA DELLE FIRME DELLE FUNZIONI IN QUESTO FILE
+#
+# create_hsv_scatter_comparison_figure(
+#     image_rgb: np.ndarray,
+#     image_balanced_rgb: np.ndarray,
+#     convert_rgb_to_hsv,
+#     stride: int = 8,
+#     screen_width: int = 1200,
+#     screen_height: int = 800,
+#     dpi: int = 100
+# ) -> matplotlib.figure.Figure
+#     # Crea una figura 2x2 di confronto tra immagine RGB e scatter HSV (originale e bilanciata gray world).
+# ========================================================
+
+
+# ========================================================
+# 1. IMPORT NECESSARI
 import numpy as np
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 
 from model.color_tools import convert_rgb_to_hsv_manual
+# ========================================================
 
-
+# ========================================================
+# 2. CREAZIONE FIGURA DI CONFRONTO SCATTER HSV
 def create_hsv_scatter_comparison_figure(
-    image_rgb,
-    image_balanced_rgb,
+    image_rgb: np.ndarray,
+    image_balanced_rgb: np.ndarray,
     convert_rgb_to_hsv,
-    stride=8,
-    screen_width=1200,
-    screen_height=800,
-    dpi=100
+    stride: int = 8,
+    screen_width: int = 1200,
+    screen_height: int = 800,
+    dpi: int = 100
 ):
     """
     Crea una figura 2x2:
@@ -40,11 +59,10 @@ def create_hsv_scatter_comparison_figure(
     coords = np.stack([Y.flatten(), X.flatten()], axis=1)
 
     # Funzione per ottenere punti HSV e colori RGB
-    def get_hsv_scatter_data(img_rgb):
+    def get_hsv_scatter_data(img_rgb: np.ndarray):
         img_hsv = convert_rgb_to_hsv_manual(img_rgb)
         hsv_pixels = img_hsv[ys][:, xs].reshape(-1, 3)
         rgb_pixels = img_rgb[ys][:, xs].reshape(-1, 3) / 255.0
-        # OpenCV HSV: H in 0-179, S/V in 0-255
         h = hsv_pixels[:, 0]
         s = hsv_pixels[:, 1]
         v = hsv_pixels[:, 2]
@@ -54,7 +72,7 @@ def create_hsv_scatter_comparison_figure(
     h_b, s_b, v_b, c_b = get_hsv_scatter_data(image_balanced_rgb)
 
     # Crea figura
-    fig = plt.figure(figsize=(screen_width * 0.9 /dpi, screen_height * 0.9 /dpi), dpi=dpi, constrained_layout=True)
+    fig = plt.figure(figsize=(screen_width * 0.9 / dpi, screen_height * 0.9 / dpi), dpi=dpi, constrained_layout=True)
 
     # Immagine RGB originale
     ax1 = fig.add_subplot(2, 2, 1)
@@ -91,3 +109,4 @@ def create_hsv_scatter_comparison_figure(
     ax4.set_zlim(0, 255)
 
     return fig
+# ========================================================
