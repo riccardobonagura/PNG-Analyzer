@@ -10,24 +10,24 @@
 #     mem_420: int,
 #     y4: np.ndarray, cb4: np.ndarray, cr4: np.ndarray,
 #     y4_422: np.ndarray, cb4_422: np.ndarray, cr4_422: np.ndarray,
-#     y4_420: np.ndarray, cb4_420: np.ndarray, cr4_420: np.ndarray,
-#     screen_width: int,
-#     screen_height: int,
-#     dpi: int = 100
-# ) -> Figure
-#     # Crea una figura matplotlib che confronta immagini originali e subsamplate,
-#     # mostra la memoria occupata, le risoluzioni cromatiche e le matrici centrali Y/Cb/Cr.
+#     y4_420: np.ndarray, cb4_420: np.ndarray, cr4_420: np.ndarray
+# ) -> list[dict]
+#     # Restituisce una lista di 3 dizionari, ognuno con:
+#     # - 'image': immagine RGB
+#     # - 'title': stringa con titolo e memoria
+#     # - 'resolution': dimensioni Y e Cb/Cr
+#     # - 'matrix_text': rappresentazione testuale della matrice 4×4 Y/Cb/Cr
 # ========================================================
 
 
 # ========================================================
 # 1. IMPORT NECESSARI
-from matplotlib.figure import Figure
 import numpy as np
 # ========================================================
 
+
 # ========================================================
-# 2. CREAZIONE FIGURA DI SUBSAMPLING
+# 2. CREAZIONE DATI GREZZI PER FIGURA DI SUBSAMPLING
 def create_subsampling_figure(
     image_rgb: np.ndarray,
     image_422: np.ndarray,
@@ -38,25 +38,17 @@ def create_subsampling_figure(
     y4: np.ndarray, cb4: np.ndarray, cr4: np.ndarray,
     y4_422: np.ndarray, cb4_422: np.ndarray, cr4_422: np.ndarray,
     y4_420: np.ndarray, cb4_420: np.ndarray, cr4_420: np.ndarray,
-    screen_width: int,
-    screen_height: int,
-    dpi: int = 100
-) -> Figure:
+) -> list[dict]:
     """
-    Crea una figura matplotlib con:
-    - Immagine originale RGB
-    - Immagini con subsampling 4:2:2 e 4:2:0
-    - Risoluzioni cromatiche e memoria
-    - Matrici centrali 4x4 di Y, Cb, Cr
+    Restituisce una lista di 3 dizionari contenenti i dati grezzi per la costruzione
+    di una figura matplotlib che confronta original vs. subsampling.
+
+    Ogni dizionario contiene:
+    - 'image': immagine RGB
+    - 'title': titolo con memoria
+    - 'resolution': testo con dimensioni Y e Cb/Cr
+    - 'matrix_text': testo formattato con valori Y/Cb/Cr 4x4
     """
-    margin_factor = 0.85
-    fig_width = int((screen_width * margin_factor) / dpi)
-    fig_height = int((screen_height * margin_factor) / dpi)
-    fig = Figure(figsize=(fig_width, fig_height), dpi=dpi)
-
-    # Layout: 3 colonne (RGB, 422, 420), 3 righe (immagini, testo, matrici)
-    axs = [[fig.add_subplot(3, 3, i + j * 3 + 1) for i in range(3)] for j in range(3)]
-
     images = [image_rgb, image_422, image_420]
     titles = [
         f"Originale RGB\nMemoria: {mem_orig:.1f} KB",
@@ -69,40 +61,28 @@ def create_subsampling_figure(
         (y4_420, cb4_420, cr4_420),
     ]
 
-    for col in range(3):
-        axs[0][col].imshow(images[col].astype(np.uint8))
-        axs[0][col].set_title(titles[col], fontsize=10)
-        axs[0][col].axis("off")
+    result = []
 
-        # Riga testo: risoluzione Y e Cb/Cr
-        y, cb, cr = matrices[col]
-        axs[1][col].text(
-            0.5, 0.5,
-            f"Y: {y.shape[1]}×{y.shape[0]}\n"
-            f"Cb/Cr: {cb.shape[1]}×{cb.shape[0]}",
-            fontsize=9, ha='center', va='center'
-        )
-        axs[1][col].axis("off")
-
-        # Riga matrici Y/Cb/Cr
+    for i in range(3):
+        y, cb, cr = matrices[i]
         matrix_text = ""
-        for i in range(y.shape[0]):
-            row_text = ""
-            for j in range(y.shape[1]):
-                row_text += f"{int(y[i, j])}/{int(cb[i, j])}/{int(cr[i, j])}  "
-            matrix_text += row_text.strip() + "\n"
+        for r in range(y.shape[0]):
+            row = ""
+            for c in range(y.shape[1]):
+                row += f"{int(y[r, c])}/{int(cb[r, c])}/{int(cr[r, c])}  "
+            matrix_text += row.strip() + "\n"
 
-        axs[2][col].text(
-            0.5, 0.5, matrix_text,
-            fontsize=8,
-            family="monospace",
-            va='center',
-            ha='center',
-            linespacing=1.4,
-            transform=axs[2][col].transAxes
+        resolution_text = (
+            f"Y: {y.shape[1]}×{y.shape[0]}\n"
+            f"Cb/Cr: {cb.shape[1]}×{cb.shape[0]}"
         )
-        axs[2][col].axis("off")
 
-    fig.tight_layout()
-    return fig
+        result.append({
+            "image": images[i],
+            "title": titles[i],
+            "resolution": resolution_text,
+            "matrix_text": matrix_text.strip()
+        })
+
+    return result
 # ========================================================

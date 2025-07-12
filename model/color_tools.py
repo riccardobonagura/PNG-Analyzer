@@ -4,6 +4,9 @@
 # convert_rgb_to_ycbcr(rgb_image: np.ndarray) -> np.ndarray
 #     # Converte un’immagine RGB uint8 in YCbCr uint8 con shape (H, W, 3)
 #
+# convert_ycbcr_to_rgb(image_ycbcr: np.ndarray) -> np.ndarray
+#     # Converte un’immagine YCbCr (float64) in RGB (uint8) usando la formula BT.601.
+#
 # split_ycbcr_channels(ycbcr_image: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]
 #     # Restituisce i canali Y, Cb, Cr come array 2D
 #
@@ -21,6 +24,16 @@
 #
 # gray_world_white_balance(img_rgb: np.ndarray) -> np.ndarray
 #     # Applica il bilanciamento del bianco "gray world" su un’immagine RGB
+#
+# create_hsv_scatter_comparison_figure(
+#     image_rgb: np.ndarray,
+#     image_balanced_rgb: np.ndarray,
+#     convert_rgb_to_hsv,
+#     stride: int = 8
+# ) -> dict
+#     # Restituisce un dizionario con:
+#     # - immagini RGB originale e bilanciata
+#     # - scatter HSV (originale e bilanciata) con colori RGB normalizzati
 # ========================================================
 
 
@@ -30,7 +43,7 @@ import numpy as np
 # ========================================================
 
 # ========================================================
-# 2. CONVERSIONE DA RGB A YCbCr
+# 2. CONVERSIONE DA RGB A YCbCr e viceversa
 def convert_rgb_to_ycbcr(rgb_image: np.ndarray) -> np.ndarray:
     """
     Converte un'immagine RGB (uint8) in YCbCr (standard BT.601) usando operazioni matriciali.
@@ -47,6 +60,25 @@ def convert_rgb_to_ycbcr(rgb_image: np.ndarray) -> np.ndarray:
     ycbcr = np.stack((Y, Cb, Cr), axis=-1)
     ycbcr = np.clip(ycbcr, 0, 255).astype(np.uint8)
     return ycbcr
+
+def convert_ycbcr_to_rgb(image_ycbcr: np.ndarray) -> np.ndarray:
+    """
+    Converte un'immagine YCbCr (float64) in RGB (uint8), usando la formula BT.601.
+    Implementata manualmente a basso livello.
+    """
+    T_inv = np.array([
+        [1.0, 0.0, 1.402],
+        [1.0, -0.344136, -0.714136],
+        [1.0, 1.772, 0.0]
+    ])
+
+    offset = np.array([0, 128, 128])
+
+    shape = image_ycbcr.shape
+    flat_ycbcr = image_ycbcr.reshape(-1, 3)
+    flat_rgb = np.dot(flat_ycbcr - offset, T_inv.T)
+    flat_rgb = np.clip(flat_rgb, 0, 255).astype(np.uint8)
+    return flat_rgb.reshape(shape)
 # ========================================================
 
 # ========================================================
@@ -67,8 +99,8 @@ def split_ycbcr_channels(ycbcr_image: np.ndarray):
 # 4. CONVERSIONE DA RGB A HSV (calcolo manuale)
 def convert_rgb_to_hsv_manual(rgb_image: np.ndarray) -> np.ndarray:
     """
-    Converte un'immagine RGB in HSV manualmente, senza usare funzioni di libreria.
-    Restituisce un'immagine HSV con H in [0, 179], S e V in [0, 255], dtype=uint8.
+    Converte un'immagine RGB in HSV.
+    Restituisce un'immagine HSV con H in [0, 179], S e V in [0, 255].
     """
     rgb_image = rgb_image.astype(np.float32) / 255.0
     R, G, B = rgb_image[:, :, 0], rgb_image[:, :, 1], rgb_image[:, :, 2]
@@ -123,7 +155,7 @@ def split_rgb_channels(rgb_image: np.ndarray):
 # ========================================================
 
 # ========================================================
-# 7. ISTOGRAMMI RGB MANUALI
+# 7. ISTOGRAMMI RGB
 def compute_rgb_histograms(rgb_image: np.ndarray, num_bins: int = 256):
     """
     Calcola gli istogrammi dei tre canali R, G, B.
@@ -149,12 +181,12 @@ def compute_rgb_histograms(rgb_image: np.ndarray, num_bins: int = 256):
 # ========================================================
 
 # ========================================================
-# 8. BILANCIAMENTO DEL BIANCO (GRAY WORLD)
+# 8. BILANCIAMENTO DEL BIANCO
 def gray_world_white_balance(img_rgb: np.ndarray) -> np.ndarray:
     """
-    Applica il bilanciamento del bianco "gray world" su un'immagine RGB.
-    img_rgb: array numpy H x W x 3, dtype uint8 (valori 0-255)
-    Restituisce una nuova immagine RGB bilanciata, dtype uint8.
+    Applica un bilanciamento del bianco generico, tale "gray world".
+    img_rgb: array numpy H x W x 3.
+    Restituisce una nuova immagine RGB bilanciata.
     """
     img = img_rgb.astype(np.float32)
     # Calcola la media di ciascun canale
@@ -177,4 +209,53 @@ def gray_world_white_balance(img_rgb: np.ndarray) -> np.ndarray:
     # Clippa e converte in uint8
     img_balanced = np.clip(img_balanced, 0, 255).astype(np.uint8)
     return img_balanced
+# ========================================================
+#9. SCATTER per HSV
+def create_hsv_scatter_comparison_figure(
+    image_rgb: np.ndarray,
+    image_balanced_rgb: np.ndarray,
+    convert_rgb_to_hsv,
+    stride: int = 8
+) -> dict:
+    """
+    Restituisce i dati grezzi per costruire una figura 2x2 di confronto HSV:
+    - immagini RGB
+    - scatter plot HSV (originale e bilanciata) + colori RGB normalizzati
+
+    Args:
+        image_rgb: np.ndarray, immagine RGB originale
+        image_balanced_rgb: np.ndarray, immagine RGB bilanciata
+        convert_rgb_to_hsv: funzione per convertire RGB → HSV
+        stride: campionamento spaziale (pixel)
+
+    Returns:
+        dict con chiavi:
+            - image_rgb
+            - image_balanced_rgb
+            - scatter_data: {
+                "original": (h, s, v, c),
+                "balanced": (h, s, v, c)
+              }
+    """
+    h, w = image_rgb.shape[:2]
+    ys = np.arange(0, h, stride)
+    xs = np.arange(0, w, stride)
+
+    def extract(img):
+        hsv = convert_rgb_to_hsv(img)
+        hsv_sample = hsv[ys][:, xs].reshape(-1, 3)
+        rgb_sample = img[ys][:, xs].reshape(-1, 3) / 255.0
+        return hsv_sample[:, 0], hsv_sample[:, 1], hsv_sample[:, 2], rgb_sample
+
+    h_o, s_o, v_o, c_o = extract(image_rgb)
+    h_b, s_b, v_b, c_b = extract(image_balanced_rgb)
+
+    return {
+        "image_rgb": image_rgb,
+        "image_balanced_rgb": image_balanced_rgb,
+        "scatter_data": {
+            "original": (h_o, s_o, v_o, c_o),
+            "balanced": (h_b, s_b, v_b, c_b)
+        }
+    }
 # ========================================================

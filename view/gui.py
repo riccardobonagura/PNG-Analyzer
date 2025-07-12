@@ -1,71 +1,74 @@
 # ========================================================
-# TABELLA DELLE FIRME DEI METODI PUBBLICI DI AppView
+# TABELLA DELLE FIRME DEI METODI DI AppView
 #
-# Costruttore e layout:
-# AppView(root: tk.Tk, controller: AppController)
-#     # Costruttore della classe GUI. Riceve la root Tkinter e il controller.
 #
-# _setup_layout(self)
-#     # Inizializza e dispone tutti i widget principali e i frame della finestra.
+# __init__(self, root: tk.Tk, controller):
+#     Inizializza la finestra principale, imposta il layout e collega il controller.
 #
-# Sessione e canvas:
-# clear_all_canvases(self)
-#     # Elimina e distrugge tutte le canvas di visualizzazione (RGB, YCbCr, HSV, custom).
+# _setup_layout(self):
+#     Imposta la struttura base della finestra e crea i widget principali.
 #
-# reset_session(self)
-#     # Reset grafico e logico della sessione: cancella immagini, metadati e pulsanti.
+# clear_all_canvases(self):
+#     Rimuove e distrugge tutti i canvas di visualizzazione esistenti, resettando i riferimenti.
 #
-# _hide_all_buttons(self)
-#     # Nasconde tutti i pulsanti della toolbar superiore.
+# reset_session(self):
+#     Ripristina lo stato iniziale della GUI: cancella canvas, resetta pulsanti, immagine e metadati.
 #
-# _pack_buttons(self, mode: str)
-#     # Mostra i pulsanti adatti in base allo stato/modalità corrente (initial, rgb, ycbcr, etc).
+# _hide_all_buttons(self):
+#     Nasconde tutti i pulsanti della toolbar.
 #
-# Caricamento, visualizzazione, metadati:
-# load_image(self)
-#     # Avvia il dialog di caricamento PNG e aggiorna la visualizzazione grafica e i metadati.
+# _pack_buttons(self, mode: str):
+#     Organizza la visualizzazione dei pulsanti in base alla modalità corrente.
 #
-# show_full_image(self)
-#     # Mostra l’immagine intera e aggiorna la visualizzazione e i metadati.
+# load_image(self):
+#     Apre una finestra di dialogo per caricare un file PNG, aggiorna vista e metadati.
 #
-# update_image_display(self)
-#     # Ridimensiona e visualizza l’immagine corrente nella GUI.
+# show_full_image(self):
+#     Ripristina e mostra l’immagine originale a pieno schermo, aggiorna metadati e pulsanti.
 #
-# update_metadata_display(self)
-#     # Aggiorna la label dei metadati con percorso, risoluzione, canali e spazio colore.
+# update_image_display(self):
+#     Aggiorna l’immagine corrente nella GUI ridimensionandola e convertendola in PhotoImage.
 #
-# show_metadata_hover(self, event)
-#     # Mostra un popup con i metadati quando il mouse passa sopra il pulsante dettagli.
+# update_metadata_display(self):
+#     Legge e mostra filepath, risoluzione, canali e spazio colore nei metadati.
 #
-# hide_metadata_hover(self, event)
-#     # Nasconde il popup dei metadati (se presente).
+# show_metadata_hover(self, _):
+#     Mostra un popup flottante con i metadati quando si passa il mouse sul pulsante “Dettagli”.
 #
-# Visualizzazione canali e vista avanzata:
-# _toggle_canvas(self, canvas_attr: str, fig_builder, mode_on: str, mode_off: str = None, buttons_mode: str = None, error_msg: str = None)
-#     # Logica generica per mostrare/nascondere canvas relative ai canali o alle viste avanzate.
+# hide_metadata_hover(self, _):
+#     Nasconde il popup dei metadati se presente.
 #
-# toggle_rgb(self)
-#     # Visualizza o nasconde la canvas con la rappresentazione dei canali RGB.
+# _toggle_canvas(self, canvas_attr: str, fig_builder, mode_on: str,
+#                    mode_off: str = None, buttons_mode: str = None, error_msg: str = None):
+#     Logica comune per mostrare/nascondere un canvas matplotlib (RGB, YCbCr, HSV).
 #
-# toggle_ycbcr(self)
-#     # Visualizza o nasconde la canvas con i canali YCbCr.
+# toggle_rgb(self):
+#     Attiva o disattiva la visualizzazione dei canali RGB.
 #
-# toggle_hsv(self)
-#     # Visualizza o nasconde la canvas con i canali HSV.
+# toggle_ycbcr(self):
+#     Attiva o disattiva la visualizzazione dei canali YCbCr.
 #
-# toggle_custom_view(self)
-#     # Visualizza la vista avanzata (custom) in base al canale attivo (istogrammi, scatter, ecc).
+# toggle_hsv(self):
+#     Attiva o disattiva la visualizzazione dei canali HSV.
 #
-# Conversione JPEG e notifiche:
-# on_jpeg_clicked(self)
-#     # Handler per il pulsante "Converti in JPEG": mostra popup, converte e salva il file.
+# toggle_custom_view(self):
+#     Attiva la vista avanzata (istogrammi o scatter) per il canale attivo.
 #
-# show_jpeg_ready_popup(self, filepath: str)
-#     # Mostra popup di conferma salvataggio JPEG e bottone OK per chiusura.
+# on_jpeg_clicked(self):
+#     Handler per “Converti in JPEG”: apre popup compressione, converte e salva.
 #
+# show_jpeg_ready_popup(self, filepath: str):
+#     Mostra un popup che conferma l’avvenuto salvataggio del JPEG.
+#
+# on_directionality_clicked(self):
+#     Handler per “Direzionalità Tamura”: calcola e mostra istogramma polare e valore scalare.
+#
+# on_contrast_clicked(self):
+#     Handler per “Contrasto Tamura”: calcola e mostra mappa di contrasto e valore scalare.
+#
+# on_granularity_clicked(self):
+#     Handler per “Granularità Tamura”: calcola e mostra overlay dei granuli e valore scalare.
 # ========================================================
-
-
 
 # ========================================================
 # 1. IMPORT NECESSARI
@@ -89,6 +92,8 @@ class AppView:
     BUTTON_CUSTOM_TEXT = "Vista avanzata"
     BUTTON_JPEG_TEXT = "Converti in JPEG"
     BUTTON_DIRECTIONALITY_TEXT = "Direzionalità"
+    BUTTON_CONTRAST_TEXT = "Contrasto"
+    BUTTON_GRANULARITY_TEXT = "Granularità"
 
     MSGBOX_LOAD_ERROR = "Errore"
     MSGBOX_LOAD_ERROR_TEXT = "Impossibile caricare l'immagine."
@@ -114,14 +119,13 @@ class AppView:
         self.controller = controller
         self.root.title(self.TITLE)
 
-        # Gestione finestra cross-platform (compatibile con Python 3.12.3 su Ubuntu)
+        # Gestione finestra cross-platform
         if sys.platform.startswith('win'):
             self.root.state("zoomed")
         else:
-            # Compatibilità Linux (WSL Ubuntu):
             try:
                 self.root.attributes("-zoomed", True)
-            except Exception:
+            except Exception: # catch-all
                 self.root.attributes("-fullscreen", True)
 
         self.current_color_mode = None  # 'rgb', 'ycbcr', 'hsv'
@@ -131,6 +135,11 @@ class AppView:
         self.rgb_canvas = None
         self.ycbcr_canvas = None
         self.hsv_canvas = None
+
+        self.directionality_canvas = None
+        self.contrast_canvas = None
+        self.granularity_canvas = None
+        self.hsv_custom_canvas = None
 
         self._setup_layout()
 
@@ -151,6 +160,8 @@ class AppView:
         # Pulsanti principali
         self.jpeg_button = tk.Button(self.button_frame, text=self.BUTTON_JPEG_TEXT, command=self.on_jpeg_clicked)
         self.directionality_button = tk.Button(self.button_frame, text=self.BUTTON_DIRECTIONALITY_TEXT, command=self.on_directionality_clicked)
+        self.contrast_button = tk.Button(self.button_frame, text="Contrasto", command=self.on_contrast_clicked)
+        self.granularity_button = tk.Button(self.button_frame, text="Granularità", command=self.on_granularity_clicked)
         self.load_button = tk.Button(self.button_frame, text=self.BUTTON_LOAD_TEXT, command=self.load_image)
         self.reset_button = tk.Button(self.button_frame, text=self.BUTTON_RESET_TEXT, command=self.reset_session)
         self.details_button = tk.Button(self.button_frame, text=self.BUTTON_DETAILS_TEXT, command=self.show_full_image)
@@ -168,10 +179,11 @@ class AppView:
         self.custom_button.pack_forget()
         self.jpeg_button.pack_forget()
         self.directionality_button.pack_forget()
+        self.contrast_button.pack_forget()
+        self.granularity_button.pack_forget()
 
         self.details_button.bind("<Enter>", self.show_metadata_hover)
         self.details_button.bind("<Leave>", self.hide_metadata_hover)
-
     # ========================================================
     # 3. METODI DI CONTROLLO DELLA VISUALIZZAZIONE E SESSIONE
 
@@ -181,10 +193,15 @@ class AppView:
         Reset delle variabili di riferimento.
         """
         for canvas in [self.rgb_canvas, self.ycbcr_canvas, self.hsv_canvas,
-                       getattr(self, "hsv_custom_canvas", None)]:
+                       getattr(self, "hsv_custom_canvas", None),
+                       getattr(self, "directionality_canvas", None),
+                       getattr(self, "contrast_canvas", None),
+                       getattr(self, "granularity_canvas", None)]:
             if canvas:
                 canvas.get_tk_widget().destroy()
+
         self.rgb_canvas = self.ycbcr_canvas = self.hsv_canvas = None
+        self.directionality_canvas = self.contrast_canvas = self.granularity_canvas = None
         if hasattr(self, "hsv_custom_canvas"):
             self.hsv_custom_canvas = None
 
@@ -194,15 +211,33 @@ class AppView:
         Reset dell'immagine, dei canvas, dei metadati e dei pulsanti.
         """
         self.controller.reset_image()
+
+        # Rimuove canvas matplotlib e widget dinamici
         self.clear_all_canvases()
+
+        # Rimuove tutti i figli dal frame di visualizzazione
+        for widget in self.display_frame.winfo_children():
+            widget.destroy()
+
+        # Ripristina sfondo originale
+        self.display_frame.configure(bg="white")  # oppure il colore di default originale
+
+        # Ricrea image_panel con sfondo bianco
+        self.image_panel = tk.Label(self.display_frame, bg="white")
         self.image_panel.pack(expand=True, fill="both")
         self.image_panel.config(image="")
         self.image_panel.image = None
+
+        # Reset metadati
         self.metadata_label.config(text="")
+
+        # Reset pulsanti e stato
         self._hide_all_buttons()
         self._pack_buttons(mode='initial')
         self.custom_mode_active = False
         self.current_color_mode = None
+
+        # Chiude popup metadati se aperto
         if self.metadata_popup:
             self.metadata_popup.destroy()
             self.metadata_popup = None
@@ -211,9 +246,12 @@ class AppView:
         """
         Nasconde tutti i pulsanti della toolbar.
         """
-        for button in [self.jpeg_button, self.directionality_button, self.load_button, self.reset_button, self.details_button,
-                       self.rgb_split_button, self.ycbcr_split_button,
-                       self.hsv_split_button, self.custom_button]:
+        for button in [
+            self.jpeg_button, self.directionality_button, self.contrast_button, self.granularity_button,
+            self.load_button, self.reset_button, self.details_button,
+            self.rgb_split_button, self.ycbcr_split_button,
+            self.hsv_split_button, self.custom_button
+        ]:
             button.pack_forget()
 
     def _pack_buttons(self, mode: str):
@@ -235,7 +273,8 @@ class AppView:
             self.reset_button.pack(side="right", padx=10)
             self.jpeg_button.pack(side="right", padx=10)
             self.directionality_button.pack(side="right", padx=10)
-
+            self.contrast_button.pack(side="right", padx=10)
+            self.granularity_button.pack(side="right", padx=10)
     # ========================================================
     # 4. METODI DI GESTIONE IMMAGINE E METADATI
 
@@ -244,7 +283,15 @@ class AppView:
         Gestisce il caricamento dell'immagine PNG tramite file dialog.
         Aggiorna la visualizzazione e i metadati dopo il caricamento.
         """
+        #debug
+        print("== load_image chiamato ==")
+
+
         filepath = filedialog.askopenfilename(filetypes=[("PNG files", "*.png")])
+
+        #debug
+        print(f"[DEBUG] Filepath selezionato: {filepath}")
+
         if not filepath:
             return
 
@@ -258,22 +305,30 @@ class AppView:
         self.update_metadata_display()
 
         self._pack_buttons(mode='image_loaded')
-
         self.current_color_mode = None
         self.custom_mode_active = False
 
     def show_full_image(self):
         """
         Visualizza l'immagine completa e aggiorna la visualizzazione e i metadati.
+        Funziona anche dopo l'uso di Direzionalità / Contrasto / Granularità.
         """
         if not self.controller.is_image_loaded():
             return
-        if self.current_color_mode is None and not self.custom_mode_active:
-            return
+
+        # Pulisce tutti i grafici (inclusi quelli da contrasto, granularità, ecc.)
         self.clear_all_canvases()
+
+        # Rimuove eventuali frame aggiuntivi nella display_frame
+        for widget in self.display_frame.winfo_children():
+            if widget != self.image_panel:
+                widget.destroy()
+
+        # Mostra nuovamente l'image_panel con l'immagine aggiornata
         self.image_panel.pack(expand=True, fill="both")
         self.update_image_display()
         self.update_metadata_display()
+
         self.current_color_mode = None
         self.custom_mode_active = False
         self._pack_buttons(mode='image_loaded')
@@ -344,7 +399,6 @@ class AppView:
         if self.metadata_popup:
             self.metadata_popup.destroy()
             self.metadata_popup = None
-
     # ========================================================
     # 5. METODI DI VISUALIZZAZIONE DEI CANALI E VISTE CUSTOM
 
@@ -444,49 +498,44 @@ class AppView:
             buttons_mode='hsv',
             error_msg=self.MSGBOX_HSV_ERROR_TEXT,
         )
-
     def toggle_custom_view(self):
         """
         Visualizza la vista avanzata (custom) a seconda della modalità corrente.
         """
-        if self.custom_mode_active:
-            return
-        if not self.controller.is_image_loaded():
+        if self.custom_mode_active or not self.controller.is_image_loaded():
             return
 
         self.clear_all_canvases()
         self.image_panel.pack_forget()
+        self.custom_mode_active = True
+
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
 
         try:
             if self.current_color_mode == 'rgb':
-                fig = self.controller.get_rgb_histogram_figure(
-                    self.root.winfo_screenwidth(), self.root.winfo_screenheight())
+                fig = self.controller.get_rgb_histogram_figure(screen_width, screen_height)
                 self.rgb_canvas = FigureCanvasTkAgg(fig, master=self.display_frame)
                 self.rgb_canvas.draw()
                 self.rgb_canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
-                self.custom_mode_active = True
                 self._pack_buttons(mode='custom_rgb')
 
             elif self.current_color_mode == 'ycbcr':
-                fig = self.controller.get_ycbcr_subsampling_figure(
-                    self.root.winfo_screenwidth(), self.root.winfo_screenheight())
+                fig = self.controller.get_ycbcr_subsampling_figure(screen_width, screen_height)
                 self.ycbcr_canvas = FigureCanvasTkAgg(fig, master=self.display_frame)
                 self.ycbcr_canvas.draw()
                 self.ycbcr_canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
-                self.custom_mode_active = True
                 self._pack_buttons(mode='custom_ycbcr')
 
             elif self.current_color_mode == 'hsv':
-                fig = self.controller.get_hsv_scatter_comparison_figure(
-                    self.root.winfo_screenwidth(), self.root.winfo_screenheight())
+                fig = self.controller.get_hsv_scatter_comparison_figure(screen_width, screen_height)
                 self.hsv_custom_canvas = FigureCanvasTkAgg(fig, master=self.display_frame)
                 self.hsv_custom_canvas.draw()
                 self.hsv_custom_canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
-                self.display_frame.update_idletasks()
-                self.custom_mode_active = True
                 self._pack_buttons(mode='hsv')
 
             else:
+                # Se nessun canale attivo, torna alla vista principale
                 self.custom_mode_active = False
                 if self.current_color_mode == 'rgb':
                     self.toggle_rgb()
@@ -494,23 +543,21 @@ class AppView:
                     self.toggle_ycbcr()
                 elif self.current_color_mode == 'hsv':
                     self.toggle_hsv()
-        except Exception as e:
-            messagebox.showerror(self.MSGBOX_LOAD_ERROR, self.MSGBOX_CUSTOM_ERROR_TEXT.format(str(e)))
 
-    # ========================================================
-    # 6. METODI DI CONVERSIONE JPEG E NOTIFICHE UTENTE
+        except Exception as e:
+            self.custom_mode_active = False
+            messagebox.showerror(self.MSGBOX_LOAD_ERROR, self.MSGBOX_CUSTOM_ERROR_TEXT.format(str(e)))
 
     def on_jpeg_clicked(self):
         """
         Handler per il bottone 'Converti in JPEG'.
-        Mostra popup per scegliere il livello di compressione e gestisce la conversione e salvataggio.
+        Mostra popup per selezione livello di compressione, converte e salva il file JPEG.
         """
-        # 1. Controlla che un'immagine sia stata caricata
         if not self.controller.is_image_loaded():
             messagebox.showerror("Errore", "Carica prima un'immagine PNG.")
             return
 
-        # 2. Finestra popup per selezione compressione
+        # 1. Finestra popup per selezione compressione
         popup = Toplevel(self.root)
         popup.title("Livello di compressione JPEG")
         popup.geometry("+%d+%d" % (
@@ -536,26 +583,24 @@ class AppView:
 
         def conferma():
             popup.destroy()
-            # 3. Ottieni l'immagine corrente dal model (in BGR)
-            bgr_image = self.controller.get_current_image()
-            if bgr_image is None:
+
+            image = self.controller.get_current_image()
+            if image is None:
                 messagebox.showerror("Errore", "Nessuna immagine caricata.")
                 return
 
-            # 4. Converte da BGR a RGB
+            # Conversione BGR → RGB
             import cv2
-            rgb_image = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2RGB)
+            rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-            # 5. Conversione JPEG tramite il controller
             jpeg_bytes = self.controller.convert_image_to_jpeg(
-                rgb_image,
                 compression_level=compression_var.get()
             )
             if jpeg_bytes is None:
                 messagebox.showerror("Errore", "Errore durante la conversione JPEG.")
                 return
 
-            # 6. Dialog per scegliere dove salvare
+            # Dialog salvataggio
             filepath = filedialog.asksaveasfilename(
                 defaultextension=".jpg",
                 filetypes=[("JPEG files", "*.jpg"), ("All files", "*.*")]
@@ -563,7 +608,6 @@ class AppView:
             if not filepath:
                 return
 
-            # 7. Salva i bytes JPEG su disco
             try:
                 with open(filepath, "wb") as f:
                     f.write(jpeg_bytes)
@@ -571,7 +615,6 @@ class AppView:
                 messagebox.showerror("Errore", f"Errore nel salvataggio JPEG:\n{e}")
                 return
 
-            # 8. Notifica utente
             self.show_jpeg_ready_popup(filepath)
 
         ok_btn = tk.Button(popup, text="Converti", command=conferma, font=("Arial", 11), width=12)
@@ -580,12 +623,9 @@ class AppView:
         popup.update_idletasks()
         popup.lift()
         popup.focus_force()
-
     def show_jpeg_ready_popup(self, filepath: str):
         """
-        Mostra un popup centrato con conferma di download e bottone OK per chiudere.
-        Args:
-            filepath (str): percorso del file JPEG appena salvato.
+        Mostra un popup centrato che conferma il salvataggio del file JPEG.
         """
         popup = Toplevel(self.root)
         popup.title("JPEG pronto")
@@ -610,12 +650,11 @@ class AppView:
         popup.update_idletasks()
         popup.lift()
         popup.focus_force()
-    # ========================================================
 
     def on_directionality_clicked(self):
         """
         Handler per il bottone 'Direzionalità Tamura'.
-        Visualizza l'immagine a sinistra, istogramma polare a destra, valore scalare sotto l'istogramma.
+        Visualizza immagine originale, istogramma polare e valore scalare.
         """
         if not self.controller.is_image_loaded():
             messagebox.showerror("Errore", "Carica prima un'immagine PNG.")
@@ -624,38 +663,108 @@ class AppView:
         self.clear_all_canvases()
         self.image_panel.pack_forget()
 
-        # Get needed figures from the controller
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+
+        directionality_value, polar_fig = self.controller.process_image_directionality(
+            screen_width, screen_height
+        )
+
+        # Mostra immagine nella image_panel standard
+        self.update_image_display()
+        self.image_panel.pack(side="left", padx=20, pady=20, fill="both", expand=True)
+
+        # Mostra istogramma polare a destra
+        right_frame = tk.Frame(self.display_frame)
+        right_frame.pack(side="right", padx=20, pady=20, fill="both", expand=True)
+
+        self.directionality_canvas = FigureCanvasTkAgg(polar_fig, master=right_frame)
+        self.directionality_canvas.draw()
+        self.directionality_canvas.get_tk_widget().pack(fill="both", expand=True)
+
+        self.current_color_mode = None
+        self.custom_mode_active = False
+        self._pack_buttons(mode='image_loaded')
+
+    def on_contrast_clicked(self):
+        """
+        Handler per il bottone 'Contrasto Tamura'.
+        Mostra l'immagine originale a sinistra tramite self.image_panel,
+        mappa di contrasto a destra, valore scalare sotto.
+        """
+        if not self.controller.is_image_loaded():
+            messagebox.showerror("Errore", "Carica prima un'immagine PNG.")
+            return
+
+        self.clear_all_canvases()
+        self.image_panel.pack_forget()
+
         img = self.controller.get_current_image()
-        directionality_value, fig_polar = self.controller.process_image_directionality(img)
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
 
-        # Layout: left image, right polar histogram, value underneath
-        frame = tk.Frame(self.display_frame)
-        frame.pack(fill=tk.BOTH, expand=True)
+        contrast_value, fig_contrast = self.controller.process_image_contrast(screen_width, screen_height)
 
-        # Left: image
+        # Aggiorna immagine nel pannello esistente
         image_rgb = self.controller.bgr_to_rgb(img)
         image_pil = Image.fromarray(image_rgb)
-        frame.update_idletasks()  # Make sure geometry info is up to date
-        half_width = int(frame.winfo_width() * 0.45)
-        image_pil.thumbnail((half_width, half_width))
+        frame_width = int(self.display_frame.winfo_width() * self.IMAGE_MARGIN_FACTOR)
+        frame_height = int(self.display_frame.winfo_height() * self.IMAGE_MARGIN_FACTOR)
+        image_pil.thumbnail((frame_width, frame_height))
         image_tk = ImageTk.PhotoImage(image_pil)
-        img_label = tk.Label(frame, image=image_tk)
-        img_label.image = image_tk
-        img_label.pack(side="left", padx=20, pady=20, fill="both", expand=True)
+        self.image_panel.configure(image=image_tk)
+        self.image_panel.image = image_tk
+        self.image_panel.pack(side="left", padx=20, pady=20, fill="both", expand=True)
 
-        # Right: polar histogram
-        right_frame = tk.Frame(frame)
+        # Mappa contrasto a destra
+        right_frame = tk.Frame(self.display_frame)
         right_frame.pack(side="right", padx=20, pady=20, fill="both", expand=True)
-        from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-        polar_canvas = FigureCanvasTkAgg(fig_polar, master=right_frame)
-        polar_canvas.draw()
-        polar_canvas.get_tk_widget().pack(fill="both", expand=True)
 
-        # Scalar value under histogram
-        value_label = tk.Label(
-            right_frame,
-            text=f"Direzionalità scalare: {directionality_value:.3f}",
-            font=("Arial", 14),
-            justify="center"
-        )
-        value_label.pack(pady=(10, 0))
+        self.contrast_canvas = FigureCanvasTkAgg(fig_contrast, master=right_frame)
+        self.contrast_canvas.draw()
+        self.contrast_canvas.get_tk_widget().pack(fill="both", expand=True)
+
+        self.current_color_mode = None
+        self.custom_mode_active = False
+        self._pack_buttons(mode='image_loaded')
+
+    def on_granularity_clicked(self):
+        """
+        Handler per il bottone 'Granularità Tamura'.
+        Mostra immagine originale con overlay dei granuli e valore scalare.
+        """
+        if not self.controller.is_image_loaded():
+            messagebox.showerror("Errore", "Carica prima un'immagine PNG.")
+            return
+
+        self.clear_all_canvases()
+        self.image_panel.pack_forget()
+
+        img = self.controller.get_current_image()
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+
+        granularity_value, fig_granules = self.controller.process_image_granularity(screen_width, screen_height)
+
+        # Aggiorna immagine nel pannello esistente
+        img_rgb = self.controller.bgr_to_rgb(img)
+        img_pil = Image.fromarray(img_rgb)
+        frame_width = int(self.display_frame.winfo_width() * self.IMAGE_MARGIN_FACTOR)
+        frame_height = int(self.display_frame.winfo_height() * self.IMAGE_MARGIN_FACTOR)
+        img_pil.thumbnail((frame_width, frame_height))
+        img_tk = ImageTk.PhotoImage(img_pil)
+        self.image_panel.configure(image=img_tk)
+        self.image_panel.image = img_tk
+        self.image_panel.pack(side="left", padx=20, pady=20, fill="both", expand=True)
+
+        # Canvas con mappa granularità
+        right_frame = tk.Frame(self.display_frame)
+        right_frame.pack(side="right", padx=20, pady=20, fill="both", expand=True)
+
+        self.granularity_canvas = FigureCanvasTkAgg(fig_granules, master=right_frame)
+        self.granularity_canvas.draw()
+        self.granularity_canvas.get_tk_widget().pack(fill="both", expand=True)
+
+        self.current_color_mode = None
+        self.custom_mode_active = False
+        self._pack_buttons(mode='image_loaded')

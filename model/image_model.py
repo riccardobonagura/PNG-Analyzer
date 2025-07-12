@@ -1,5 +1,5 @@
 # ========================================================
-# 0. TABELLA DELLE FIRME DEI METODI DELLA CLASSE IMAGEMODEL
+# 0. TABELLA DELLE FIRME DEI METODI DELLA CLASSE IMAGEMODEL, classe principale del model
 #
 # ImageModel.__init__(self)
 #     # Inizializza lo stato interno della classe ImageModel.
@@ -54,17 +54,9 @@
 # 1. IMPORT DELLE LIBRERIE
 import cv2
 import numpy as np
-# Import di funzioni ausiliarie
-import model.scatter_hsv_figures as scatter_figs
-from model.color_tools import (
-    convert_rgb_to_ycbcr,
-    convert_rgb_to_hsv_manual,
-    split_ycbcr_channels,
-    split_hsv_channels,
-    split_rgb_channels,
-    gray_world_white_balance,
-)
 
+import model.color_tools
+from model.color_tools import create_hsv_scatter_comparison_figure
 
 # ========================================================
 
@@ -88,26 +80,26 @@ class ImageModel:
 
     # ----------------------------------------------------
     # 2.2. Caricamento immagine da file
-    def load_image_from_file(self, filepath: str):
-        """
-        Carica un'immagine PNG dal percorso specificato.
-        Se l'immagine ha 4 canali (RGBA), la converte in BGR (standard OpenCV).
-        Input: filepath (str) - percorso del file PNG
-        Output: nessuno (aggiorna lo stato interno della classe)
-        Comportamento atteso: aggiorna _original_image, _current_image, _filepath
-        """
-        # Caricamento dell'immagine dal file
-        image = cv2.imread(filepath, cv2.IMREAD_UNCHANGED)
-        # Controllo caricamento riuscito
-        if image is None:
-            raise ValueError("Impossibile caricare l'immagine.")
-        # Rimozione canale alpha se presente (RGBA → BGR)
-        if len(image.shape) == 3 and image.shape[-1] == 4:
-            image = cv2.cvtColor(image, cv2.COLOR_BGRA2BGR)
-        # Aggiorna lo stato interno della classe
-        self._original_image = image.copy()
-        self._current_image = image.copy()
-        self._filepath = filepath
+    def load_image_from_file(self, filepath: str) -> bool:
+        try:
+            image = cv2.imread(filepath, cv2.IMREAD_UNCHANGED)
+            if image is None:
+                print(f"[ERRORE] Impossibile leggere il file: {filepath}")
+                return False
+
+            # Converti RGBA → BGR se necessario
+            if image.shape[-1] == 4:
+                image = cv2.cvtColor(image, cv2.COLOR_BGRA2BGR)
+
+            self._original_image = image.copy()
+            self._current_image = image.copy()
+            self._filepath = filepath
+            print(f"[OK] Immagine caricata: {filepath}, shape={image.shape}")
+            return True
+
+        except Exception as e:
+            print(f"[EXCEPTION] Errore durante il caricamento: {e}")
+            return False
 
     # ----------------------------------------------------
     # 2.3. Ripristino immagine allo stato originale
@@ -243,9 +235,9 @@ class ImageModel:
         # Converte da BGR (OpenCV) a RGB (richiesto dalla funzione)
         rgb_image = cv2.cvtColor(self._current_image, cv2.COLOR_BGR2RGB)
         # Converte l'immagine RGB in YCbCr
-        ycbcr = convert_rgb_to_ycbcr(rgb_image)
+        ycbcr = model.color_tools.convert_rgb_to_ycbcr(rgb_image)
         # Estrae i canali Y, Cb, Cr
-        return split_ycbcr_channels(ycbcr)
+        return model.color_tools.split_ycbcr_channels(ycbcr)
 
     # ----------------------------------------------------
     # 2.13. Ottieni i canali H, S, V dell'immagine corrente
@@ -262,9 +254,9 @@ class ImageModel:
         # Converte da BGR (OpenCV) a RGB
         rgb_image = cv2.cvtColor(self._current_image, cv2.COLOR_BGR2RGB)
         # Converte l'immagine RGB in HSV
-        hsv = convert_rgb_to_hsv_manual(rgb_image)
+        hsv = model.color_tools.convert_rgb_to_hsv_manual(rgb_image)
         # Estrae i canali H, S, V
-        return split_hsv_channels(hsv)
+        return model.color_tools.split_hsv_channels(hsv)
 
     # ----------------------------------------------------
     # 2.14. Ottieni i canali R, G, B dell'immagine corrente
@@ -281,48 +273,26 @@ class ImageModel:
         # Converte da BGR (OpenCV) a RGB
         rgb_image = cv2.cvtColor(self._current_image, cv2.COLOR_BGR2RGB)
         # Estrae i canali R, G, B
-        return split_rgb_channels(rgb_image)
+        return model.color_tools.split_rgb_channels(rgb_image)
 
-    # ----------------------------------------------------
-    # 2.15. Genera figura di confronto subsampling YCbCr
-    def get_ycbcr_subsampling_figure(self, screen_width: int, screen_height: int, dpi: int = 100):
-        """
-        Restituisce una figura che confronta l'immagine originale con le versioni subsampled (4:2:2, 4:2:0)
-        mostrando: immagine, risoluzioni, spazio occupato (Y+Cb+Cr), matrici 4x4 centrali dei canali Y, Cb, Cr.
-        Input:
-            screen_width (int): larghezza schermo in pixel
-            screen_height (int): altezza schermo in pixel
-            dpi (int): DPI della figura
-        Output:
-            matplotlib.figure.Figure (figura matplotlib)
-        Comportamento atteso:
-            - Se non c'è immagine caricata, solleva RuntimeError
-            - Prepara tutti i dati necessari e chiama la funzione di creazione figura
-        """
-        # 1. Controlla che un'immagine sia stata caricata
+        # ----------------------------------------------------
+
+    # 2.15. Estrai dati per figura di confronto subsampling YCbCr
+    def get_ycbcr_subsampling_data(self) -> dict:
         if self._current_image is None:
             raise RuntimeError("Nessuna immagine caricata.")
 
-        # 2. Import dei moduli necessari per subsampling e visualizzazione
-        import model.subsampling_tools as tools  # Funzioni di subsampling e conversione
-        import model.subsampling_figure as figs  # Funzione di creazione figura
+        import model.subsampling_tools as tools
 
-        # 3. Conversione da BGR (OpenCV) a RGB per la visualizzazione
         image_rgb = cv2.cvtColor(self._current_image, cv2.COLOR_BGR2RGB)
+        ycbcr = model.color_tools.convert_rgb_to_ycbcr(image_rgb)
+        ycbcr_422 = tools.subsample_422(ycbcr)
+        ycbcr_420 = tools.subsample_420(ycbcr)
 
-        # 4. Conversione in YCbCr dell'immagine RGB
-        ycbcr = convert_rgb_to_ycbcr(image_rgb)
-        # 5. Subsampling 4:2:2 e 4:2:0 sull'immagine YCbCr
-        ycbcr_422 = tools.subsample_422(ycbcr)  # Ingresso: YCbCr, Uscita: YCbCr subsampled 4:2:2
-        ycbcr_420 = tools.subsample_420(ycbcr)  # Ingresso: YCbCr, Uscita: YCbCr subsampled 4:2:0
+        image_422 = model.color_tools.convert_ycbcr_to_rgb(ycbcr_422)
+        image_420 = model.color_tools.convert_ycbcr_to_rgb(ycbcr_420)
 
-        # 6. Conversione delle immagini subsampled in RGB per la visualizzazione
-        image_422 = tools.convert_ycbcr_to_rgb(ycbcr_422)  # Ingresso: YCbCr subsampled, Uscita: RGB
-        image_420 = tools.convert_ycbcr_to_rgb(ycbcr_420)  # Ingresso: YCbCr subsampled, Uscita: RGB
-
-        # 7. Estrazione delle matrici 4x4 centrali dei canali Y, Cb, Cr (per ogni versione)
         def estrai_matrici(ycbcr_img):
-            # Ingresso: immagine YCbCr, Uscita: tuple di matrici (Y, Cb, Cr) 4x4 centrali
             mat = tools.extract_center_matrix(ycbcr_img, size=4)
             return mat[:, :, 0], mat[:, :, 1], mat[:, :, 2]
 
@@ -330,85 +300,44 @@ class ImageModel:
         y4_422, cb4_422, cr4_422 = estrai_matrici(ycbcr_422)
         y4_420, cb4_420, cr4_420 = estrai_matrici(ycbcr_420)
 
-        # 8. Calcolo delle risoluzioni (altezza, larghezza) per ogni versione
-        h, w = ycbcr.shape[:2]
-        h_422, w_422 = ycbcr_422.shape[:2]
-        h_420, w_420 = ycbcr_420.shape[:2]
-
-        # 9. Calcolo dello spazio memoria occupato da Y, Cb, Cr per ogni versione (in KB)
         def memoria_totale(ycbcr_img, mode):
-            # Ingresso: immagine YCbCr, modalità subsampling ("444","422","420")
-            # Uscita: memoria totale in KB
             Y_bytes = ycbcr_img.shape[0] * ycbcr_img.shape[1]
             C_bytes = tools.compute_chroma_memory_usage(ycbcr_img, mode)
-            return (Y_bytes + C_bytes) / 1024  # in KB
+            return (Y_bytes + C_bytes) / 1024
 
         mem_orig = memoria_totale(ycbcr, "444")
         mem_422 = memoria_totale(ycbcr_422, "422")
         mem_420 = memoria_totale(ycbcr_420, "420")
 
-        # 10. Chiamata alla funzione di creazione figura subsampling
-        # Ingresso: tutte le immagini, matrici, dimensioni, memoria
-        # Uscita: figura matplotlib
-        return figs.create_subsampling_figure(
-            image_rgb=image_rgb,
-            image_422=image_422,
-            image_420=image_420,
-            mem_orig=mem_orig,
-            mem_422=mem_422,
-            mem_420=mem_420,
-            y4=y4, cb4=cb4, cr4=cr4,
-            y4_422=y4_422, cb4_422=cb4_422, cr4_422=cr4_422,
-            y4_420=y4_420, cb4_420=cb4_420, cr4_420=cr4_420,
-            screen_width=screen_width,
-            screen_height=screen_height,
-            dpi=dpi
-        )
+        return {
+            "image_rgb": image_rgb,
+            "image_422": image_422,
+            "image_420": image_420,
+            "mem_orig": mem_orig,
+            "mem_422": mem_422,
+            "mem_420": mem_420,
+            "y4": y4, "cb4": cb4, "cr4": cr4,
+            "y4_422": y4_422, "cb4_422": cb4_422, "cr4_422": cr4_422,
+            "y4_420": y4_420, "cb4_420": cb4_420, "cr4_420": cr4_420,
+        }
 
     # ----------------------------------------------------
-    # 2.16. Genera figura di confronto scatter HSV
-    def get_hsv_scatter_comparison_figure(self, screen_width: int, screen_height: int, dpi: int = 100):
-        """
-        Restituisce una figura 2x2 con:
-        - Immagine RGB originale (in alto a sinistra)
-        - Scatter plot HSV originale (in alto a destra)
-        - Immagine RGB bilanciata gray world (in basso a sinistra)
-        - Scatter plot HSV bilanciata (in basso a destra)
-        Input:
-            screen_width (int): larghezza schermo in pixel
-            screen_height (int): altezza schermo in pixel
-            dpi (int): DPI della figura
-        Output:
-            matplotlib.figure.Figure (figura matplotlib)
-        Comportamento atteso:
-            - Se non c'è immagine caricata, solleva RuntimeError
-            - Prepara tutti i dati necessari e chiama la funzione di creazione figura
-        """
-        # 1. Controlla che un'immagine sia stata caricata
+    # 2.16. Estrai dati per figura scatter HSV
+    def get_hsv_scatter_comparison_data(self) -> dict:
         if self._current_image is None:
             raise RuntimeError("Nessuna immagine caricata.")
 
-        # 2. Conversione da BGR (OpenCV) a RGB per la visualizzazione
         image_rgb = cv2.cvtColor(self._current_image, cv2.COLOR_BGR2RGB)
+        image_balanced_rgb = model.color_tools.gray_world_white_balance(image_rgb)
 
-        # 3. Bilanciamento del bianco gray world sull'immagine RGB
-        image_balanced_rgb = gray_world_white_balance(image_rgb)
-
-        # 4. Chiamata alla funzione di creazione figura scatter HSV
-        # Ingresso: immagini RGB, funzione di conversione HSV, parametri di visualizzazione
-        # Uscita: figura matplotlib
-        fig = scatter_figs.create_hsv_scatter_comparison_figure(
+        scatter_data = create_hsv_scatter_comparison_figure(
             image_rgb=image_rgb,
             image_balanced_rgb=image_balanced_rgb,
-            convert_rgb_to_hsv=convert_rgb_to_hsv_manual,
-            stride=8,
-            screen_width=screen_width,
-            screen_height=screen_height,
-            dpi=dpi
+            convert_rgb_to_hsv=model.color_tools.convert_rgb_to_hsv_manual,
+            stride=8
         )
-        return fig
-    # ----------------------------------------------------
 
-# ========================================================
+        return scatter_data
+    # ========================================================
 
-
+# NOTA: alcuni getters e setters non sono stati usati, ma lasciati per completezza

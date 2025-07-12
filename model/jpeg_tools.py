@@ -41,6 +41,11 @@
 # ========================================================
 # 1. IMPORT NECESSARI
 import numpy as np
+# Import necessari per la sezione export (12)
+import jpegio as jio
+from PIL import Image
+import tempfile
+import os
 # ========================================================
 
 # ========================================================
@@ -104,11 +109,6 @@ def apply_dct_to_blocks(blocks: np.ndarray):
 def quantize_block(block: np.ndarray, quant_tbl: np.ndarray):
     # Divisione elemento per elemento e arrotondamento
     return np.round(block / quant_tbl).astype(np.int32)
-
-# Funzione che dequantizza un blocco usando una tabella di quantizzazione
-def dequantize_block(block: np.ndarray, quant_tbl: np.ndarray):
-    # Moltiplicazione elemento per elemento
-    return (block * quant_tbl).astype(np.float32)
 # ========================================================
 
 # ========================================================
@@ -254,11 +254,7 @@ def blocks_to_image(blocks):
 
 # ========================================================
 # 12. ESPORTAZIONE JPEG
-# Import necessari per la sezione export
-import jpegio as jio
-from PIL import Image
-import tempfile
-import os
+
 
 # Funzione per esportare i blocchi quantizzati come file JPEG e restituire i bytes.
 def export_jpeg_bytes_from_blocks(jpeg_data, quant_tables=None):
@@ -270,7 +266,7 @@ def export_jpeg_bytes_from_blocks(jpeg_data, quant_tables=None):
     Returns:
         jpeg_bytes: bytes del file JPEG
     """
-    # Estraggo i blocchi
+    # Estrazione blocchi
     Y_blocks = jpeg_data["Y_blocks"]
     Cb_blocks = jpeg_data["Cb_blocks"]
     Cr_blocks = jpeg_data["Cr_blocks"]
@@ -278,37 +274,36 @@ def export_jpeg_bytes_from_blocks(jpeg_data, quant_tables=None):
     # Calcolo dimensione immagine
     H, W = n_blocks_y * block_size, n_blocks_x * block_size
 
-    # Creo directory temporanea per il file JPEG
+    # Creazione directory temporanea per il file JPEG
     with tempfile.TemporaryDirectory() as tmpdir:
         dummy_path = os.path.join(tmpdir, "dummy.jpg")
         output_path = os.path.join(tmpdir, "output.jpg")
-        # Creo immagine dummy RGB per inizializzare
+
+        # Immagine dummy RGB per inizializzare
         dummy = Image.new("RGB", (W, H), color=(128,128,128))
         dummy.save(dummy_path, "JPEG")
 
-        # Leggo oggetto JPEG con jpegio
+
         jpeg = jio.read(dummy_path)
-        # Sostituisco i coefficienti con i blocchi passati
+
+        # coefficienti -> i blocchi passati
         jpeg.coef_arrays[0][:] = blocks_to_image(Y_blocks)
         jpeg.coef_arrays[1][:] = blocks_to_image(Cb_blocks)
         jpeg.coef_arrays[2][:] = blocks_to_image(Cr_blocks)
 
-        # Debug: possibilità di salvare i coefficienti come immagini
-        # imageio.imwrite("debug_Cb_coeff.png", blocks_to_image(Cb_blocks))
-        # imageio.imwrite("debug_Cr_coeff.png", blocks_to_image(Cr_blocks))
-
-        # Sostituisco le tabelle di quantizzazione se fornite
+        # tabelle di quantizzazione fornite
         if quant_tables is not None:
             jpeg.quant_tables[0] = quant_tables[0]
             jpeg.quant_tables[1] = quant_tables[1]
 
-        # Scrivo il JPEG finale
+        # Scrittura JPEG finale
         jio.write(jpeg, output_path)
 
-        # Leggo i bytes del file JPEG
+        # Lettura bytes del file JPEG
         with open(output_path, "rb") as f:
             jpeg_bytes = f.read()
-        # Rimuovo il file temporaneo se presente
+
+        # Rimozione del file temporaneo
         if os.path.exists(output_path):
             os.remove(output_path)
 

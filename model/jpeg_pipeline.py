@@ -15,9 +15,9 @@
 # 1. IMPORT NECESSARI
 import numpy as np
 
-from .color_tools import convert_rgb_to_ycbcr, split_ycbcr_channels
-from .jpeg_tools import jpeg_encode_channel, export_jpeg_bytes_from_blocks, pad_to_block_size
-from .subsampling_tools import subsample_420
+import model.color_tools as color_tools
+import model.subsampling_tools as subsampling_tools
+import model.jpeg_tools as jpeg_tools
 # ========================================================
 
 # ========================================================
@@ -39,17 +39,18 @@ def jpeg_encode_image(
     # 1. Conversione da RGB a YCbCr
     # Input: rgb_image (np.ndarray)
     # Output: ycbcr (np.ndarray)
-    ycbcr = convert_rgb_to_ycbcr(rgb_image)
+    ycbcr = color_tools.convert_rgb_to_ycbcr(rgb_image)
 
     # 2. Sottocampionamento 4:2:0 sui canali cromatici
     # Input: ycbcr (np.ndarray)
     # Output: ycbcr_420 (np.ndarray)
-    ycbcr_420 = subsample_420(ycbcr)
+    ycbcr_420 = subsampling_tools.subsample_420(ycbcr)
+
 
     # 3. Separazione dei tre canali Y, Cb, Cr
     # Input: ycbcr_420 (np.ndarray)
     # Output: Y, Cb, Cr (np.ndarray)
-    Y, Cb, Cr = split_ycbcr_channels(ycbcr_420)
+    Y, Cb, Cr = color_tools.split_ycbcr_channels(ycbcr_420)
 
     # 4. Sottocampionamento reale (half resolution) dei canali cromatici
     # Input: Cb, Cr (np.ndarray)
@@ -60,16 +61,16 @@ def jpeg_encode_image(
     # 5. Padding per tutti i canali per garantire dimensioni multiple di 8
     # Input: Y, Cb_420, Cr_420 (np.ndarray)
     # Output: Y_padded, Cb_420_padded, Cr_420_padded (np.ndarray)
-    Y_padded = pad_to_block_size(Y, 8)
-    Cb_420_padded = pad_to_block_size(Cb_420, 8)
-    Cr_420_padded = pad_to_block_size(Cr_420, 8)
+    Y_padded = jpeg_tools.pad_to_block_size(Y, 8)
+    Cb_420_padded = jpeg_tools.pad_to_block_size(Cb_420, 8)
+    Cr_420_padded = jpeg_tools.pad_to_block_size(Cr_420, 8)
 
     # 6. Codifica JPEG per ciascun canale con le rispettive tabelle di quantizzazione
     # Input: Y_padded, Cb_420_padded, Cr_420_padded (np.ndarray)
     # Output: Y_blocks, Cb_blocks, Cr_blocks (np.ndarray)
-    Y_blocks = jpeg_encode_channel(Y_padded, luma_quant_table)
-    Cb_blocks = jpeg_encode_channel(Cb_420_padded, chroma_quant_table)
-    Cr_blocks = jpeg_encode_channel(Cr_420_padded, chroma_quant_table)
+    Y_blocks = jpeg_tools.jpeg_encode_channel(Y_padded, luma_quant_table)
+    Cb_blocks = jpeg_tools.jpeg_encode_channel(Cb_420_padded, chroma_quant_table)
+    Cr_blocks = jpeg_tools.jpeg_encode_channel(Cr_420_padded, chroma_quant_table)
 
     # 7. Costruzione dizionario con blocchi quantizzati per esportazione JPEG
     # Input: Y_blocks, Cb_blocks, Cr_blocks (np.ndarray)
@@ -88,7 +89,7 @@ def jpeg_encode_image(
     # 9. Esportazione dei bytes JPEG tramite funzione dedicata
     # Input: jpeg_data (dict), tables (list)
     # Output: jpeg_bytes (bytes)
-    jpeg_bytes = export_jpeg_bytes_from_blocks(jpeg_data, tables)
+    jpeg_bytes = jpeg_tools.export_jpeg_bytes_from_blocks(jpeg_data, tables)
 
     # 10. Restituzione dei bytes JPEG risultanti
     return jpeg_bytes
