@@ -80,7 +80,9 @@ from model.color_tools import (
     compute_rgb_histograms
 )
 from matplotlib.figure import Figure
+import matplotlib.pyplot as plt
 from model.jpeg_pipeline import jpeg_encode_image
+from model.texture_tools import tamura_contrast_map, tamura_granularity
 
 
 # ========================================================
@@ -257,51 +259,58 @@ class AppController:
             return cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
     def get_rgb_histogram_figure(self, screen_width: int, screen_height: int, dpi: int = 100) -> Figure:
-            """
-            Genera una figura matplotlib che mostra 4 istogrammi:
-            R, G, B e composito RGB con curve sovrapposte.
-            Args:
-                screen_width (int): larghezza dello schermo in pixel.
-                screen_height (int): altezza dello schermo in pixel.
-                dpi (int): densità di punti per pollice della figura.
-            Returns:
-                Figure: oggetto figura matplotlib.
-            Raises:
-                RuntimeError: se nessuna immagine è caricata.
-            """
-            image = self.get_current_image()
-            if image is None:
-                raise RuntimeError("Nessuna immagine caricata.")
-            rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            hist_r, hist_g, hist_b, bins = compute_rgb_histograms(rgb_image)
-            margin_factor = 0.85
-            fig_width = int((screen_width * margin_factor) / dpi)
-            fig_height = int((screen_height * margin_factor) / dpi)
-            fig = Figure(figsize=(fig_width, fig_height), dpi=dpi)
-            axs = [
-                fig.add_subplot(2, 2, 1),  # R
-                fig.add_subplot(2, 2, 2),  # G
-                fig.add_subplot(2, 2, 3),  # B
-                fig.add_subplot(2, 2, 4),  # Composito
-            ]
-            axs[0].bar(bins, hist_r, color='red')
-            axs[0].set_title("Istogramma R (Rosso)")
-            axs[1].bar(bins, hist_g, color='green')
-            axs[1].set_title("Istogramma G (Verde)")
-            axs[2].bar(bins, hist_b, color='blue')
-            axs[2].set_title("Istogramma B (Blu)")
-            axs[3].plot(bins, hist_r, color='red', label='R')
-            axs[3].plot(bins, hist_g, color='green', label='G')
-            axs[3].plot(bins, hist_b, color='blue', label='B')
-            axs[3].set_title("Istogramma composito RGB")
-            axs[3].legend()
-            for ax in axs:
-                ax.set_xlim([0, 255])
-                ax.set_xlabel("Valore di Intensità")
-                ax.set_ylabel("Frequenza")
-                ax.grid(True)
-            fig.tight_layout()
-            return fig
+        """
+        Genera una figura matplotlib che mostra 4 istogrammi:
+        R, G, B e composito RGB con curve sovrapposte.
+        Args:
+            screen_width (int): larghezza dello schermo in pixel.
+            screen_height (int): altezza dello schermo in pixel.
+            dpi (int): densità di punti per pollice della figura.
+        Returns:
+            Figure: oggetto figura matplotlib.
+        Raises:
+            RuntimeError: se nessuna immagine è caricata.
+        """
+        image = self.get_current_image()
+        if image is None:
+            raise RuntimeError("Nessuna immagine caricata.")
+        rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        hist_r, hist_g, hist_b, bins = compute_rgb_histograms(rgb_image)
+        margin_factor = 0.75
+
+        # per evitare sovrapposizioni
+        hist_shrink = 0.8
+
+        fig_width = int((screen_width * margin_factor) / dpi)
+        fig_height = int((screen_height * margin_factor) / dpi)
+        fig = Figure(figsize=(fig_width, fig_height), dpi=dpi)
+        axs = [
+            fig.add_subplot(2, 2, 1),  # R
+            fig.add_subplot(2, 2, 2),  # G
+            fig.add_subplot(2, 2, 3),  # B
+            fig.add_subplot(2, 2, 4),  # Composito
+        ]
+
+        # Apply shrinking for bar heights
+        axs[0].bar(bins, hist_r * hist_shrink, color='red')
+        axs[0].set_title("Istogramma R (Rosso)")
+        axs[1].bar(bins, hist_g * hist_shrink, color='green')
+        axs[1].set_title("Istogramma G (Verde)")
+        axs[2].bar(bins, hist_b * hist_shrink, color='blue')
+        axs[2].set_title("Istogramma B (Blu)")
+        axs[3].plot(bins, hist_r * hist_shrink, color='red', label='R')
+        axs[3].plot(bins, hist_g * hist_shrink, color='green', label='G')
+        axs[3].plot(bins, hist_b * hist_shrink, color='blue', label='B')
+        axs[3].set_title("Istogramma composito RGB")
+        axs[3].legend()
+
+        for ax in axs:
+            ax.set_xlim([0, 255])
+            ax.set_xlabel("Valore di Intensità")
+            ax.set_ylabel("Frequenza")
+            ax.grid(True)
+        fig.tight_layout()
+        return fig
 
     def get_rgb_figure(self, screen_width: int, screen_height: int, dpi: int = 100) -> Figure:
             """
@@ -518,7 +527,6 @@ class AppController:
 
         Returns:
             directionality (float): Valore scalare della direzionalità.
-            hist (np.ndarray): Istogramma delle orientazioni.
             fig (Figure): Figura matplotlib dell'istogramma polare.
         """
         directionality, hist = texture_tools.compute_directionality_grid(rgb_image)
@@ -540,3 +548,80 @@ class AppController:
         ax.grid(True)
 
         return directionality, fig
+
+    def get_contrast_map_figure(self, rgb_image: np.ndarray, screen_width: int = 800, screen_height: int = 500,
+                                dpi: int = 100) -> tuple[Figure, float]:
+        """
+        Riceve un'immagine RGB, calcola la mappa di contrasto Tamura e il valore scalare globale,
+        e costruisce una figura matplotlib che visualizza la mappa di contrasto.
+
+        Args:
+            rgb_image (np.ndarray): Immagine RGB (HxWx3).
+            screen_width (int): Larghezza dello schermo (opzionale).
+            screen_height (int): Altezza dello schermo (opzionale).
+            dpi (int): DPI della figura matplotlib.
+
+        Returns:
+            fig (Figure): Figura matplotlib con la mappa di contrasto visualizzata.
+            contrast_value (float): Valore scalare Tamura del contrasto globale.
+        """
+        # Calcola mappa e valore scalare tramite la funzione didattica
+        contrast_value, contrast_map = tamura_contrast_map(rgb_image)
+
+        # Assembla la figura: visualizza la mappa di contrasto con colorbar
+        fig_width = int((screen_width * 0.9) / dpi)
+        fig_height = int((screen_height * 0.9) / dpi)
+        fig = Figure(figsize=(fig_width, fig_height), dpi=dpi)
+        ax = fig.add_subplot(1, 1, 1)
+        im = ax.imshow(contrast_map, cmap='hot', interpolation='nearest')
+        ax.set_title(f"Tamura Contrast Map\nValore scalare: {contrast_value:.3f}")
+        fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
+        ax.axis('off')  # opzionale: nasconde gli assi per focus sulla mappa
+
+        return fig, contrast_value
+
+    def get_granularity_map_figure(self, rgb_image: np.ndarray, dpi: int = 100) -> tuple[Figure, float]:
+        """
+        Riceve un'immagine RGB, calcola la granularità Tamura e i dati dei granuli,
+        costruisce una figura matplotlib sovrapponendo i granuli all'immagine originale.
+
+        Args:
+            rgb_image (np.ndarray): Immagine RGB (HxWx3).
+            dpi (int): DPI della figura matplotlib.
+
+        Returns:
+            fig (Figure): Figura matplotlib con overlay dei granuli.
+            granularity_value (float): Valore scalare Tamura della granularità.
+        """
+        # Ottieni dimensioni schermo dinamicamente
+        try:
+            import tkinter as tk
+            root = tk.Tk()
+            root.withdraw()
+            screen_width = root.winfo_screenwidth()
+            screen_height = root.winfo_screenheight()
+            root.destroy()
+        except Exception:
+            screen_width, screen_height = 800, 600  # fallback
+
+        # Calcola granularità e dati granuli
+        granularity_value, granules_data = tamura_granularity(rgb_image)
+
+        # Prepara la figura
+        fig_width = int((screen_width * 0.9) / dpi)
+        fig_height = int((screen_height * 0.9) / dpi)
+        fig = Figure(figsize=(fig_width, fig_height), dpi=dpi)
+        ax = fig.add_subplot(1, 1, 1)
+
+        # Mostra l'immagine originale
+        ax.imshow(rgb_image)
+        # Overlay dei granuli (come cerchi rossi trasparenti)
+        for (x, y, area) in granules_data:
+            # raggio stimato dal'area (area = pi * r^2)
+            radius = np.sqrt(area / np.pi)
+            circ = plt.Circle((x, y), radius, color='red', fill=False, linewidth=1.5, alpha=0.7)
+            ax.add_patch(circ)
+        ax.set_title(f"Tamura Granularity Overlay\nValore scalare: {granularity_value:.4f}")
+        ax.axis('off')
+
+        return fig, granularity_value

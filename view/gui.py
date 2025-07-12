@@ -351,7 +351,7 @@ class AppView:
     def _toggle_canvas(self, canvas_attr: str, fig_builder, mode_on: str, mode_off: str = None,
                        buttons_mode: str = None, error_msg: str = None):
         """
-        Gestisce la logica di visualizzazione e nascondimento di una canvas associata a uno specifico canale o vista.
+        Gestisce la logica di visualizzazione e scomparsa di una canvas associata a uno specifico canale o vista.
         Args:
             canvas_attr (str): nome dell'attributo canvas da gestire.
             fig_builder (callable): funzione che costruisce la figura matplotlib.
