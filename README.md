@@ -38,20 +38,31 @@ Why this project exists
 Highlights and main features 
 - Color analysis
   - RGB / YCbCr / HSV transformations and per-channel inspection.
+  ![alt text](https://github.com/riccardobonagura/PNG-Analyzer/blob/giorno-1-optimization1/graphs/RGBsplit.png)
+
+  ![alt text](https://github.com/riccardobonagura/PNG-Analyzer/blob/giorno-1-optimization1/graphs/YCbCr-split.png)
+  
   - RGB histograms and HSV scatter comparisons.
+  ![alt text](https://github.com/riccardobonagura/PNG-Analyzer/blob/giorno-1-optimization1/graphs/Istogrammi-RGB.png)
+
+  ![alt text](https://github.com/riccardobonagura/PNG-Analyzer/blob/giorno-1-optimization1/graphs/WBscatter.png)
+
   - White-balance demo (Gray World).
- ![alt text](https://github.com/riccardobonagura/PNG-Analyzer/blob/giorno-1-optimization1/graphs/Screenshot%202025-12-09%20155508.png)
+  ![alt text](https://github.com/riccardobonagura/PNG-Analyzer/blob/giorno-1-optimization1/graphs/Screenshot%202025-12-09%20155508.png)
   
 - Subsampling & visualization
   - 4\:4:4, 4\:2:2 and 4\:2:0 chroma subsampling implementations and a ready-to-draw subsampling comparison figure (with textual 4×4 matrix extracts and memory stats).
+  ![alt text](https://github.com/riccardobonagura/PNG-Analyzer/blob/giorno-1-optimization1/graphs/Subsampling.png)
 - JPEG pipeline (educational)
   - End-to-end JPEG encoding pipeline implemented up to the point of entropy export: color conversion, chroma subsampling, 8×8 padding, block splitting, 2D DCT, quantization, zigzag ordering and final block collection for export.
   - Multiple quantization tables (quality presets) and channel-specific handling.
 - Texture analysis (Tamura measures)
   - Directionality (Sobel-based orientation histogram), local contrast map (Tamura contrast), and granularity detector (Laplacian + connected components).
+ ![alt text](https://github.com/riccardobonagura/PNG-Analyzer/blob/giorno-1-optimization1/graphs/Tamura-Directionality.png)
+
 - GUI-driven workflow
   - Tkinter-based interface orchestrated by a controller that returns matplotlib Figure objects for display. Widgets and dialogs allow guided selection of images, channels, dates for plotting and tool parameters.
-
+  ![alt text](https://github.com/riccardobonagura/PNG-Analyzer/blob/giorno-1-optimization1/graphs/NavigationMap.png)
 ---
 
 Technical deep dive
@@ -114,6 +125,7 @@ Design patterns & project practices
 - Strategy/plug-in style for visualization: adding another view (e.g., a new color inspection) is a matter of adding another builder function and connecting a button.
 - Pipeline abstraction: JPEG encoding and texture extraction are organized as pipelines that take an image and return a predictable set of artifacts (bytes, scalar metrics, images), making them reusable in batch scripts or unit tests.
 
+
 ---
 
 Libraries & environment
@@ -160,3 +172,5 @@ Academic & practical relevance
   - Coursework / lab exercises in digital image processing.
   - Generating figures and numerical evidence for reports or lectures.
   - Rapid prototyping and experimentation for research on color/texture-based similarity search.
+ 
+ ![alt text](https://github.com/riccardobonagura/PNG-Analyzer/blob/giorno-1-optimization1/graphs/UseCases.png)
