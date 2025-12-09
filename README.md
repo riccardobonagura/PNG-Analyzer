@@ -38,31 +38,29 @@ Why this project exists
 Highlights and main features 
 - Color analysis
   - RGB / YCbCr / HSV transformations and per-channel inspection.
-  ![alt text](https://github.com/riccardobonagura/PNG-Analyzer/blob/giorno-1-optimization1/graphs/RGBsplit.png)
-
-  ![alt text](https://github.com/riccardobonagura/PNG-Analyzer/blob/giorno-1-optimization1/graphs/YCbCr-split.png)
+    ![alt text](https://github.com/riccardobonagura/PNG-Analyzer/blob/giorno-1-optimization1/graphs/RGBsplit.png)
+    ![alt text](https://github.com/riccardobonagura/PNG-Analyzer/blob/giorno-1-optimization1/graphs/YCbCr-split.png)
   
   - RGB histograms and HSV scatter comparisons.
-  ![alt text](https://github.com/riccardobonagura/PNG-Analyzer/blob/giorno-1-optimization1/graphs/Istogrammi-RGB.png)
-
-  ![alt text](https://github.com/riccardobonagura/PNG-Analyzer/blob/giorno-1-optimization1/graphs/WBscatter.png)
+    ![alt text](https://github.com/riccardobonagura/PNG-Analyzer/blob/giorno-1-optimization1/graphs/Istogrammi-RGB.png)
+    ![alt text](https://github.com/riccardobonagura/PNG-Analyzer/blob/giorno-1-optimization1/graphs/WBscatter.png)
 
   - White-balance demo (Gray World).
-  ![alt text](https://github.com/riccardobonagura/PNG-Analyzer/blob/giorno-1-optimization1/graphs/Screenshot%202025-12-09%20155508.png)
+    ![alt text](https://github.com/riccardobonagura/PNG-Analyzer/blob/giorno-1-optimization1/graphs/Screenshot%202025-12-09%20155508.png)
   
 - Subsampling & visualization
   - 4\:4:4, 4\:2:2 and 4\:2:0 chroma subsampling implementations and a ready-to-draw subsampling comparison figure (with textual 4×4 matrix extracts and memory stats).
-  ![alt text](https://github.com/riccardobonagura/PNG-Analyzer/blob/giorno-1-optimization1/graphs/Subsampling.png)
+    ![alt text](https://github.com/riccardobonagura/PNG-Analyzer/blob/giorno-1-optimization1/graphs/Subsampling.png)
 - JPEG pipeline (educational)
   - End-to-end JPEG encoding pipeline implemented up to the point of entropy export: color conversion, chroma subsampling, 8×8 padding, block splitting, 2D DCT, quantization, zigzag ordering and final block collection for export.
   - Multiple quantization tables (quality presets) and channel-specific handling.
 - Texture analysis (Tamura measures)
   - Directionality (Sobel-based orientation histogram), local contrast map (Tamura contrast), and granularity detector (Laplacian + connected components).
- ![alt text](https://github.com/riccardobonagura/PNG-Analyzer/blob/giorno-1-optimization1/graphs/Tamura-Directionality.png)
+    ![alt text](https://github.com/riccardobonagura/PNG-Analyzer/blob/giorno-1-optimization1/graphs/Tamura-Directionality.png)
 
 - GUI-driven workflow
   - Tkinter-based interface orchestrated by a controller that returns matplotlib Figure objects for display. Widgets and dialogs allow guided selection of images, channels, dates for plotting and tool parameters.
-  ![alt text](https://github.com/riccardobonagura/PNG-Analyzer/blob/giorno-1-optimization1/graphs/NavigationMap.png)
+    ![alt text](https://github.com/riccardobonagura/PNG-Analyzer/blob/giorno-1-optimization1/graphs/NavigationMap.png)
 ---
 
 Technical deep dive
@@ -158,8 +156,8 @@ Project layout (high-level, core modules)
 - docs/ (optional) — diagrams, screenshots and the dissertation-style doc you shared
 
 
-##Dependencies:
-![alt text](https://github.com/riccardobonagura/PNG-Analyzer/blob/giorno-1-optimization1/graphs/ClassDiagram.png)
+## Dependencies:
+![alt text](https://github.com/riccardobonagura/PNG-Analyzer/blob/giorno-1-optimization1/graphs/Dependencies.png)
 
 ---
 
