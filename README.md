@@ -3,6 +3,7 @@
 A compact, research-oriented desktop application for pixel-level analysis, visualization and transformation of PNG images.  
 PNG-Analyzer is designed as an educational / exploratory tool that makes low-level image processing techniques explicit and observable: color-space decompositions, chroma subsampling, JPEG encoding building blocks, and texture measures (Tamura). It is ideal for students, researchers or engineers who want to inspect how image processing primitives behave on real images and to produce figures and metrics for reports or demonstrations.
 
+In the GRAPH folder of this project you will find demo tests of all the tools of PNG-Analyzer
 ---
 
 Table of contents
