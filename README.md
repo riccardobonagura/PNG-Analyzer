@@ -39,6 +39,8 @@ Highlights and main features
   - RGB / YCbCr / HSV transformations and per-channel inspection.
   - RGB histograms and HSV scatter comparisons.
   - White-balance demo (Gray World).
+ ![alt text](https://github.com/riccardobonagura/PNG-Analyzer/blob/giorno-1-optimization1/graphs/Screenshot%202025-12-09%20155508.png)
+  
 - Subsampling & visualization
   - 4\:4:4, 4\:2:2 and 4\:2:0 chroma subsampling implementations and a ready-to-draw subsampling comparison figure (with textual 4×4 matrix extracts and memory stats).
 - JPEG pipeline (educational)
