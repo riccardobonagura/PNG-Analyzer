@@ -127,6 +127,8 @@ Libraries & environment
 
 ---
 
+## Class Diagram
+![alt text](https://github.com/riccardobonagura/PNG-Analyzer/blob/giorno-1-optimization1/graphs/ClassDiagram.png)
 Project layout (high-level, core modules)
 - model/
   - color_tools.py — color conversions, histogram & channel helpers, white balance and HSV scatter utilities
@@ -142,6 +144,10 @@ Project layout (high-level, core modules)
   - gui.py — Tkinter GUI with a modular canvas architecture and hooks to show matplotlib figures
 - tests/ (suggested in future) — unit tests and small sample images (not required to run here)
 - docs/ (optional) — diagrams, screenshots and the dissertation-style doc you shared
+
+
+##Dependencies:
+![alt text](https://github.com/riccardobonagura/PNG-Analyzer/blob/giorno-1-optimization1/graphs/ClassDiagram.png)
 
 ---
 
